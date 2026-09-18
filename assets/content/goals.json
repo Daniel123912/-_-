@@ -1,20 +1,37 @@
 [
   {
-    "id": "house",
-    "name": "Уютный домик",
-    "cost": 120,
-    "description": "Свой уголок для отдыха."
+    "id": "treat",
+    "name": "Вкусный запас",
+    "cost": 60,
+    "description": "Коробка лакомств на несколько дней.",
+    "ageTracks": ["junior", "middle"]
   },
   {
-    "id": "bike",
-    "name": "Велосипед",
-    "cost": 180,
-    "description": "Кататься вместе по двору."
+    "id": "toy_box",
+    "name": "Коробка игрушек",
+    "cost": 75,
+    "description": "Несколько любимых игрушек в одном месте.",
+    "ageTracks": ["junior", "middle"]
   },
   {
     "id": "party",
     "name": "Праздник друзей",
     "cost": 90,
-    "description": "Устроить весёлую встречу."
+    "description": "Устроить весёлую встречу.",
+    "ageTracks": ["junior", "middle", "senior"]
+  },
+  {
+    "id": "house",
+    "name": "Уютный домик",
+    "cost": 120,
+    "description": "Свой уголок для отдыха.",
+    "ageTracks": ["middle", "senior"]
+  },
+  {
+    "id": "bike",
+    "name": "Велосипед",
+    "cost": 180,
+    "description": "Кататься вместе по двору.",
+    "ageTracks": ["senior"]
   }
 ]

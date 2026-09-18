@@ -1,5 +1,355 @@
 {
-  "bodies": ["круглый", "пушистый", "длинный"],
-  "colors": ["рыжий", "серый", "пятнистый"],
-  "accessories": ["бантик", "шарфик", "очки"]
+  "models": [
+    {
+      "id": "pet_01",
+      "name": "Капелька",
+      "asset": "assets/images/pets/pet_01.svg",
+      "thumb": "assets/images/pets/thumbs/pet_01.png",
+      "family": "синий",
+      "pattern": false,
+      "vibe": "малыш, синий",
+      "ageTrack": "junior",
+      "eyes": "голубые",
+      "accessory": "без"
+    },
+    {
+      "id": "pet_02",
+      "name": "Ромбик",
+      "asset": "assets/images/pets/pet_02.svg",
+      "thumb": "assets/images/pets/thumbs/pet_02.png",
+      "family": "синий",
+      "pattern": true,
+      "vibe": "малыш, синий, узор",
+      "ageTrack": "junior",
+      "eyes": "голубые",
+      "accessory": "ромбики"
+    },
+    {
+      "id": "pet_03",
+      "name": "Звёздочка",
+      "asset": "assets/images/pets/pet_03.svg",
+      "thumb": "assets/images/pets/thumbs/pet_03.png",
+      "family": "синий",
+      "pattern": true,
+      "vibe": "малыш, синий, на лбу",
+      "ageTrack": "junior",
+      "eyes": "голубые",
+      "accessory": "на голове"
+    },
+    {
+      "id": "pet_04",
+      "name": "Зефирка",
+      "asset": "assets/images/pets/pet_04.svg",
+      "thumb": "assets/images/pets/thumbs/pet_04.png",
+      "family": "розовый",
+      "pattern": false,
+      "vibe": "малыш, розовый",
+      "ageTrack": "junior",
+      "eyes": "карие",
+      "accessory": "без"
+    },
+    {
+      "id": "pet_05",
+      "name": "Пончик",
+      "asset": "assets/images/pets/pet_05.svg",
+      "thumb": "assets/images/pets/thumbs/pet_05.png",
+      "family": "розовый",
+      "pattern": true,
+      "vibe": "малыш, розовый, узор",
+      "ageTrack": "junior",
+      "eyes": "карие",
+      "accessory": "ромбики"
+    },
+    {
+      "id": "pet_06",
+      "name": "Бантик",
+      "asset": "assets/images/pets/pet_06.svg",
+      "thumb": "assets/images/pets/thumbs/pet_06.png",
+      "family": "розовый",
+      "pattern": true,
+      "vibe": "малыш, розовый, на лбу",
+      "ageTrack": "junior",
+      "eyes": "карие",
+      "accessory": "на голове"
+    },
+    {
+      "id": "pet_07",
+      "name": "Фиалка",
+      "asset": "assets/images/pets/pet_07.svg",
+      "thumb": "assets/images/pets/thumbs/pet_07.png",
+      "family": "фиолетовый",
+      "pattern": false,
+      "vibe": "малыш, фиол, зелёные глаза",
+      "ageTrack": "junior",
+      "eyes": "зелёные",
+      "accessory": "без"
+    },
+    {
+      "id": "pet_08",
+      "name": "Ириска",
+      "asset": "assets/images/pets/pet_08.svg",
+      "thumb": "assets/images/pets/thumbs/pet_08.png",
+      "family": "фиолетовый",
+      "pattern": true,
+      "vibe": "малыш, фиол, узор",
+      "ageTrack": "junior",
+      "eyes": "зелёные",
+      "accessory": "ромбики"
+    },
+    {
+      "id": "pet_09",
+      "name": "Аметист",
+      "asset": "assets/images/pets/pet_09.svg",
+      "thumb": "assets/images/pets/thumbs/pet_09.png",
+      "family": "фиолетовый",
+      "pattern": true,
+      "vibe": "малыш, фиол, на лбу",
+      "ageTrack": "junior",
+      "eyes": "зелёные",
+      "accessory": "на голове"
+    },
+    {
+      "id": "pet_10",
+      "name": "Волна",
+      "asset": "assets/images/pets/pet_10.svg",
+      "thumb": "assets/images/pets/thumbs/pet_10.png",
+      "family": "синий",
+      "pattern": false,
+      "vibe": "средний, голуб",
+      "ageTrack": "middle",
+      "eyes": "голубые",
+      "accessory": "без"
+    },
+    {
+      "id": "pet_11",
+      "name": "Бриз",
+      "asset": "assets/images/pets/pet_11.svg",
+      "thumb": "assets/images/pets/thumbs/pet_11.png",
+      "family": "синий",
+      "pattern": true,
+      "vibe": "средний, голуб, узор",
+      "ageTrack": "middle",
+      "eyes": "голубые",
+      "accessory": "ромбики"
+    },
+    {
+      "id": "pet_12",
+      "name": "Небо",
+      "asset": "assets/images/pets/pet_12.svg",
+      "thumb": "assets/images/pets/thumbs/pet_12.png",
+      "family": "синий",
+      "pattern": true,
+      "vibe": "средний, голуб, на голове",
+      "ageTrack": "middle",
+      "eyes": "голубые",
+      "accessory": "на голове"
+    },
+    {
+      "id": "pet_13",
+      "name": "Ягодка",
+      "asset": "assets/images/pets/pet_13.svg",
+      "thumb": "assets/images/pets/thumbs/pet_13.png",
+      "family": "розовый",
+      "pattern": false,
+      "vibe": "средний, розовый",
+      "ageTrack": "middle",
+      "eyes": "карие",
+      "accessory": "без"
+    },
+    {
+      "id": "pet_14",
+      "name": "Конфетка",
+      "asset": "assets/images/pets/pet_14.svg",
+      "thumb": "assets/images/pets/thumbs/pet_14.png",
+      "family": "розовый",
+      "pattern": true,
+      "vibe": "средний, розовый, узор",
+      "ageTrack": "middle",
+      "eyes": "карие",
+      "accessory": "ромбики"
+    },
+    {
+      "id": "pet_15",
+      "name": "Карамелька",
+      "asset": "assets/images/pets/pet_15.svg",
+      "thumb": "assets/images/pets/thumbs/pet_15.png",
+      "family": "розовый",
+      "pattern": true,
+      "vibe": "средний, розовый, на голове",
+      "ageTrack": "middle",
+      "eyes": "карие",
+      "accessory": "на голове"
+    },
+    {
+      "id": "pet_16",
+      "name": "Слива",
+      "asset": "assets/images/pets/pet_16.svg",
+      "thumb": "assets/images/pets/thumbs/pet_16.png",
+      "family": "фиолетовый",
+      "pattern": false,
+      "vibe": "средний, фиол",
+      "ageTrack": "middle",
+      "eyes": "зелёные",
+      "accessory": "без"
+    },
+    {
+      "id": "pet_17",
+      "name": "Черника",
+      "asset": "assets/images/pets/pet_17.svg",
+      "thumb": "assets/images/pets/thumbs/pet_17.png",
+      "family": "фиолетовый",
+      "pattern": true,
+      "vibe": "средний, фиол, узор",
+      "ageTrack": "middle",
+      "eyes": "зелёные",
+      "accessory": "ромбики"
+    },
+    {
+      "id": "pet_18",
+      "name": "Лаванда",
+      "asset": "assets/images/pets/pet_18.svg",
+      "thumb": "assets/images/pets/thumbs/pet_18.png",
+      "family": "фиолетовый",
+      "pattern": true,
+      "vibe": "средний, фиол, на голове",
+      "ageTrack": "middle",
+      "eyes": "зелёные",
+      "accessory": "на голове"
+    },
+    {
+      "id": "pet_19",
+      "name": "Океан",
+      "asset": "assets/images/pets/pet_19.svg",
+      "thumb": "assets/images/pets/thumbs/pet_19.png",
+      "family": "синий",
+      "pattern": false,
+      "vibe": "взрослый, голуб",
+      "ageTrack": "senior",
+      "eyes": "голубые",
+      "accessory": "без"
+    },
+    {
+      "id": "pet_20",
+      "name": "Шторм",
+      "asset": "assets/images/pets/pet_20.svg",
+      "thumb": "assets/images/pets/thumbs/pet_20.png",
+      "family": "синий",
+      "pattern": true,
+      "vibe": "взрослый, голуб, узор",
+      "ageTrack": "senior",
+      "eyes": "голубые",
+      "accessory": "ромбики"
+    },
+    {
+      "id": "pet_21",
+      "name": "Маяк",
+      "asset": "assets/images/pets/pet_21.svg",
+      "thumb": "assets/images/pets/thumbs/pet_21.png",
+      "family": "синий",
+      "pattern": true,
+      "vibe": "взрослый, голуб, на голове",
+      "ageTrack": "senior",
+      "eyes": "голубые",
+      "accessory": "на голове"
+    },
+    {
+      "id": "pet_22",
+      "name": "Заря",
+      "asset": "assets/images/pets/pet_22.svg",
+      "thumb": "assets/images/pets/thumbs/pet_22.png",
+      "family": "розовый",
+      "pattern": false,
+      "vibe": "взрослый, розовый",
+      "ageTrack": "senior",
+      "eyes": "карие",
+      "accessory": "без"
+    },
+    {
+      "id": "pet_23",
+      "name": "Коралл",
+      "asset": "assets/images/pets/pet_23.svg",
+      "thumb": "assets/images/pets/thumbs/pet_23.png",
+      "family": "розовый",
+      "pattern": true,
+      "vibe": "взрослый, розовый, узор",
+      "ageTrack": "senior",
+      "eyes": "карие",
+      "accessory": "ромбики"
+    },
+    {
+      "id": "pet_24",
+      "name": "Пион",
+      "asset": "assets/images/pets/pet_24.svg",
+      "thumb": "assets/images/pets/thumbs/pet_24.png",
+      "family": "розовый",
+      "pattern": true,
+      "vibe": "взрослый, розовый, на голове",
+      "ageTrack": "senior",
+      "eyes": "карие",
+      "accessory": "на голове"
+    },
+    {
+      "id": "pet_25",
+      "name": "Индиго",
+      "asset": "assets/images/pets/pet_25.svg",
+      "thumb": "assets/images/pets/thumbs/pet_25.png",
+      "family": "фиолетовый",
+      "pattern": false,
+      "vibe": "взрослый, фиол",
+      "ageTrack": "senior",
+      "eyes": "зелёные",
+      "accessory": "без"
+    },
+    {
+      "id": "pet_26",
+      "name": "Виноград",
+      "asset": "assets/images/pets/pet_26.svg",
+      "thumb": "assets/images/pets/thumbs/pet_26.png",
+      "family": "фиолетовый",
+      "pattern": true,
+      "vibe": "взрослый, фиол, узор",
+      "ageTrack": "senior",
+      "eyes": "зелёные",
+      "accessory": "ромбики"
+    },
+    {
+      "id": "pet_27",
+      "name": "Орхидея",
+      "asset": "assets/images/pets/pet_27.svg",
+      "thumb": "assets/images/pets/thumbs/pet_27.png",
+      "family": "фиолетовый",
+      "pattern": true,
+      "vibe": "взрослый, фиол, на голове",
+      "ageTrack": "senior",
+      "eyes": "зелёные",
+      "accessory": "на голове"
+    }
+  ],
+  "colors": [
+    "синий",
+    "розовый",
+    "фиолетовый"
+  ],
+  "eyes": [
+    "голубые",
+    "карие",
+    "зелёные"
+  ],
+  "accessories": [
+    "без",
+    "ромбики",
+    "на голове"
+  ],
+  "eyesByColor": {
+    "синий": "голубые",
+    "розовый": "карие",
+    "фиолетовый": "зелёные"
+  },
+  "emotions": [
+    "joy",
+    "calm",
+    "bliss",
+    "confused",
+    "sad"
+  ]
 }

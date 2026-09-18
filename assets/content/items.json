@@ -6,7 +6,8 @@
     "kind": "mandatory",
     "effectHint": "Питомец станет сытее.",
     "hungerDelta": 25,
-    "moodDelta": 5
+    "moodDelta": 5,
+    "emoji": "🍽️"
   },
   {
     "id": "water",
@@ -15,7 +16,8 @@
     "kind": "mandatory",
     "effectHint": "Важный уход каждый период.",
     "hungerDelta": 8,
-    "moodDelta": 4
+    "moodDelta": 4,
+    "emoji": "💧"
   },
   {
     "id": "grooming",
@@ -24,7 +26,8 @@
     "kind": "mandatory",
     "effectHint": "Уход поддерживает настроение.",
     "hungerDelta": 0,
-    "moodDelta": 10
+    "moodDelta": 10,
+    "emoji": "🪥"
   },
   {
     "id": "vet_check",
@@ -33,42 +36,325 @@
     "kind": "mandatory",
     "effectHint": "Непредвиденный, но нужный расход.",
     "hungerDelta": 5,
-    "moodDelta": 8
+    "moodDelta": 8,
+    "emoji": "🩺"
   },
   {
-    "id": "toy_ball",
-    "name": "Мячик",
-    "price": 18,
-    "kind": "optional",
-    "effectHint": "Игрушка поднимает настроение.",
-    "hungerDelta": -2,
-    "moodDelta": 15
-  },
-  {
-    "id": "hat",
-    "name": "Шапочка",
-    "price": 25,
-    "kind": "optional",
-    "effectHint": "Красиво, но можно подождать.",
-    "hungerDelta": 0,
-    "moodDelta": 12
-  },
-  {
-    "id": "snack",
-    "name": "Вкусняшка",
+    "id": "bath_soap",
+    "name": "Купание с мылом",
     "price": 12,
-    "kind": "optional",
-    "effectHint": "Приятно, но не обязательно.",
-    "hungerDelta": 10,
-    "moodDelta": 8
+    "kind": "mandatory",
+    "effectHint": "Чистота — часть ухода каждый период.",
+    "hungerDelta": 0,
+    "moodDelta": 8,
+    "emoji": "🫧"
   },
   {
-    "id": "poster",
-    "name": "Плакат",
-    "price": 22,
-    "kind": "optional",
-    "effectHint": "Украшение комнаты питомца.",
+    "id": "vitamins",
+    "name": "Витамины",
+    "price": 18,
+    "kind": "mandatory",
+    "effectHint": "Поддерживают здоровье и сытость.",
+    "hungerDelta": 6,
+    "moodDelta": 6,
+    "emoji": "💊"
+  },
+  {
+    "id": "soft_bed",
+    "name": "Мягкая лежанка",
+    "price": 25,
+    "kind": "mandatory",
+    "effectHint": "Сон восстанавливает силы.",
+    "hungerDelta": 2,
+    "moodDelta": 12,
+    "emoji": "🛏️"
+  },
+  {
+    "id": "toothbrush",
+    "name": "Зубная щётка",
+    "price": 8,
+    "kind": "mandatory",
+    "effectHint": "Гигиена рта — тоже уход.",
     "hungerDelta": 0,
-    "moodDelta": 10
+    "moodDelta": 5,
+    "emoji": "🦷"
+  },
+  {
+    "id": "first_aid",
+    "name": "Аптечка",
+    "price": 22,
+    "kind": "mandatory",
+    "effectHint": "На всякий случай — обязательно в доме.",
+    "hungerDelta": 0,
+    "moodDelta": 7,
+    "emoji": "🩹"
+  },
+  {
+    "id": "nail_care",
+    "name": "Уход за коготками",
+    "price": 14,
+    "kind": "mandatory",
+    "effectHint": "Аккуратные лапки — здоровый питомец.",
+    "hungerDelta": 0,
+    "moodDelta": 6,
+    "emoji": "💅"
+  },
+  {
+    "id": "towel",
+    "name": "Мягкое полотенце",
+    "price": 11,
+    "kind": "mandatory",
+    "effectHint": "После купания — тепло и уют.",
+    "hungerDelta": 0,
+    "moodDelta": 7,
+    "emoji": "🧺"
+  },
+  {
+    "id": "squish_paw",
+    "name": "Сквиш-лапка",
+    "price": 50,
+    "kind": "optional",
+    "effectHint": "Мягкая игрушка — сразу веселее.",
+    "placement": "В лапках питомца",
+    "hungerDelta": 0,
+    "moodDelta": 14,
+    "emoji": "🐾",
+    "image": "assets/images/shop/squish_paw.png"
+  },
+  {
+    "id": "piggy_bank",
+    "name": "Копилка",
+    "price": 100,
+    "kind": "optional",
+    "effectHint": "Символ цели: копим на мечту!",
+    "placement": "В комнате питомца",
+    "hungerDelta": 0,
+    "moodDelta": 10,
+    "emoji": "🐷",
+    "image": "assets/images/shop/piggy_bank.png"
+  },
+  {
+    "id": "capybara_small",
+    "name": "Капибара маленькая",
+    "price": 150,
+    "kind": "optional",
+    "effectHint": "Милый друг для объятий.",
+    "placement": "В лапках питомца",
+    "hungerDelta": 0,
+    "moodDelta": 16,
+    "emoji": "🦫",
+    "image": "assets/images/shop/capybara_small.png"
+  },
+  {
+    "id": "sneakers",
+    "name": "Кроссовки",
+    "price": 250,
+    "kind": "optional",
+    "effectHint": "Стильные лапки для прогулок.",
+    "placement": "На лапках питомца",
+    "hungerDelta": -2,
+    "moodDelta": 15,
+    "emoji": "👟",
+    "image": "assets/images/shop/sneakers.png"
+  },
+  {
+    "id": "keychain_67",
+    "name": "Брелок 67",
+    "price": 300,
+    "kind": "optional",
+    "effectHint": "Модный брелок на рюкзак.",
+    "placement": "На рюкзаке питомца",
+    "hungerDelta": 0,
+    "moodDelta": 14,
+    "emoji": "🔑",
+    "image": "assets/images/shop/keychain_67.png"
+  },
+  {
+    "id": "mystery_box",
+    "name": "Mystery Box",
+    "price": 300,
+    "kind": "optional",
+    "effectHint": "Сюрприз! Кто знает, что внутри?",
+    "placement": "Рядом с питомцем",
+    "hungerDelta": 0,
+    "moodDelta": 18,
+    "emoji": "🎁",
+    "image": "assets/images/shop/mystery_box.png"
+  },
+  {
+    "id": "microphone",
+    "name": "Микрофон",
+    "price": 400,
+    "kind": "optional",
+    "effectHint": "Поём хиты вместе с Финни!",
+    "placement": "В лапке питомца",
+    "hungerDelta": 0,
+    "moodDelta": 17,
+    "emoji": "🎤",
+    "image": "assets/images/shop/microphone.png"
+  },
+  {
+    "id": "gaming_mouse",
+    "name": "Игровая мышка",
+    "price": 400,
+    "kind": "optional",
+    "effectHint": "Для настоящих геймеров.",
+    "placement": "Перед питомцем",
+    "hungerDelta": 0,
+    "moodDelta": 16,
+    "emoji": "🖱️",
+    "image": "assets/images/shop/gaming_mouse.png"
+  },
+  {
+    "id": "headphones",
+    "name": "Наушники",
+    "price": 500,
+    "kind": "optional",
+    "effectHint": "Музыка поднимает настроение.",
+    "placement": "На голове питомца",
+    "hungerDelta": 0,
+    "moodDelta": 18,
+    "emoji": "🎧",
+    "image": "assets/images/shop/headphones.png"
+  },
+  {
+    "id": "figurine",
+    "name": "Коллекционная фигурка",
+    "price": 500,
+    "kind": "optional",
+    "effectHint": "Редкая фигурка в коллекцию.",
+    "placement": "В лапках питомца",
+    "hungerDelta": 0,
+    "moodDelta": 18,
+    "emoji": "🪆",
+    "image": "assets/images/shop/figurine.png"
+  },
+  {
+    "id": "keyboard",
+    "name": "Клавиатура",
+    "price": 600,
+    "kind": "optional",
+    "effectHint": "Неоновые клавиши — вау!",
+    "placement": "Перед питомцем",
+    "hungerDelta": 0,
+    "moodDelta": 17,
+    "emoji": "⌨️",
+    "image": "assets/images/shop/keyboard.png"
+  },
+  {
+    "id": "capybara_big",
+    "name": "Большая капибара",
+    "price": 600,
+    "kind": "optional",
+    "effectHint": "Гигантский пушистый друг рядом.",
+    "placement": "Рядом с питомцем",
+    "hungerDelta": 0,
+    "moodDelta": 20,
+    "emoji": "🦫",
+    "image": "assets/images/shop/capybara_big.png"
+  },
+  {
+    "id": "keychain_67_neon",
+    "name": "Брелок 67 Neon",
+    "price": 700,
+    "kind": "optional",
+    "effectHint": "Неоновая версия легендарного брелка.",
+    "placement": "На рюкзаке питомца",
+    "hungerDelta": 0,
+    "moodDelta": 20,
+    "emoji": "💚",
+    "image": "assets/images/shop/keychain_67_neon.png"
+  },
+  {
+    "id": "scooter",
+    "name": "Самокат",
+    "price": 700,
+    "kind": "optional",
+    "effectHint": "Катаемся по двору вместе!",
+    "placement": "Рядом с питомцем",
+    "hungerDelta": -3,
+    "moodDelta": 20,
+    "emoji": "🛴",
+    "image": "assets/images/shop/scooter.png"
+  },
+  {
+    "id": "bicycle",
+    "name": "Велосипед",
+    "price": 1000,
+    "kind": "optional",
+    "effectHint": "Большая мечта на двух колёсах.",
+    "placement": "Рядом с питомцем",
+    "hungerDelta": -4,
+    "moodDelta": 22,
+    "emoji": "🚲",
+    "image": "assets/images/shop/bicycle.png"
+  },
+  {
+    "id": "console",
+    "name": "Игровая консоль",
+    "price": 1200,
+    "kind": "optional",
+    "effectHint": "Играем вдвоём — супер-вайб.",
+    "placement": "В лапках питомца",
+    "hungerDelta": 0,
+    "moodDelta": 24,
+    "emoji": "🎮",
+    "image": "assets/images/shop/console.png"
+  },
+  {
+    "id": "keychain_67_gold",
+    "name": "Брелок 67 Gold",
+    "price": 1500,
+    "kind": "optional",
+    "effectHint": "Золотая легенда коллекции 67.",
+    "placement": "На рюкзаке питомца",
+    "hungerDelta": 0,
+    "moodDelta": 25,
+    "emoji": "✨",
+    "image": "assets/images/shop/keychain_67_gold.png"
+  },
+  {
+    "id": "trophy",
+    "name": "Кубок",
+    "price": 1500,
+    "kind": "optional",
+    "effectHint": "Награда чемпиона на полке.",
+    "placement": "На полке наград",
+    "hungerDelta": 0,
+    "moodDelta": 25,
+    "emoji": "🏆",
+    "image": "assets/images/shop/trophy.png"
+  },
+  {
+    "id": "smartphone",
+    "name": "Смартфон",
+    "price": 2000,
+    "kind": "optional",
+    "effectHint": "Самая большая мечта витрины!",
+    "placement": "В лапке питомца",
+    "hungerDelta": 0,
+    "moodDelta": 28,
+    "emoji": "📱",
+    "image": "assets/images/shop/smartphone.png"
+  },
+  {
+    "id": "gift_friend",
+    "name": "Подарок другу",
+    "price": 15,
+    "kind": "gift",
+    "effectHint": "Поделиться — тоже финансовое решение.",
+    "hungerDelta": 0,
+    "moodDelta": 14,
+    "emoji": "🎀"
+  },
+  {
+    "id": "gift_charity",
+    "name": "Доброе дело",
+    "price": 10,
+    "kind": "gift",
+    "effectHint": "Небольшая сумма на радость другим.",
+    "hungerDelta": 0,
+    "moodDelta": 12,
+    "emoji": "💝"
   }
 ]
