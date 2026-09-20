@@ -1,246 +1,595 @@
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'dart:math' as math;
+import 'dart:ui';
 
-/// Игровая палитра: лесной бирюзовый + солнечный янтарь (не «AI-фиолетовый»).
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+
+/// Локальные OFL-шрифты (без сети при старте).
+class FinnyFonts {
+  static const display = 'Fredoka';
+  static const body = 'Nunito';
+
+  static TextStyle fredoka({
+    double? fontSize,
+    FontWeight? fontWeight,
+    Color? color,
+    double? height,
+    double? letterSpacing,
+  }) {
+    return TextStyle(
+      fontFamily: display,
+      fontSize: fontSize,
+      fontWeight: fontWeight ?? FontWeight.w400,
+      color: color,
+      height: height,
+      letterSpacing: letterSpacing,
+    );
+  }
+
+  static TextStyle nunito({
+    double? fontSize,
+    FontWeight? fontWeight,
+    Color? color,
+    double? height,
+    double? letterSpacing,
+  }) {
+    return TextStyle(
+      fontFamily: body,
+      fontSize: fontSize,
+      fontWeight: fontWeight ?? FontWeight.w600,
+      color: color,
+      height: height,
+      letterSpacing: letterSpacing,
+    );
+  }
+}
+
+/// Finny — тёмный purple из Figma Make.
 class FinnyColors {
-  static const forest = Color(0xFF0F5C4C);
-  static const mint = Color(0xFF2BB673);
-  static const leaf = Color(0xFF7ED6A5);
-  static const sky = Color(0xFFD8F3E8);
-  static const cream = Color(0xFFF7FBFA);
-  static const sun = Color(0xFFF4B942);
-  static const coral = Color(0xFFE07A5F);
-  static const ink = Color(0xFF1A2E28);
-  static const mist = Color(0xFF5C7A70);
-  static const card = Color(0xFFFFFFFF);
-  static const budget = Color(0xFF2A9D8F);
-  static const savings = Color(0xFF4A6FA5);
-  static const purchases = Color(0xFFE9A825);
+  static const purpleDeep = Color(0xFF1A0533);
+  static const purpleMid = Color(0xFF2D1165);
+  static const purpleCard = Color(0xFF3D1A7A);
+  static const purpleLight = Color(0xFF7C3AED);
+  static const purpleBright = Color(0xFFA78BFA);
+  static const indigo = Color(0xFF4F46E5);
+  static const gold = Color(0xFFFBBF24);
+  static const goldDark = Color(0xFFD97706);
+  static const mint = Color(0xFF34D399);
+  static const pink = Color(0xFFF472B6);
+  static const sky = Color(0xFF60A5FA);
+  static const bg = Color(0xFF0D0120);
+  static const bgAlt = Color(0xFF0A1628);
+  static const ink = Color(0xFFFFFFFF);
+  static const mist = Color(0xFF9CA3AF);
+  static const card = Color(0xFF2D1165);
+  static const line = Color(0x26FFFFFF);
+  static const sheet = Color(0xFF1A0533);
+
+  // Aliases used across screens
+  static const cream = bg;
+  static const forest = purpleLight;
+  static const leaf = purpleBright;
+  static const sun = gold;
+  static const coral = pink;
+  static const glow = gold;
+  static const budget = Color(0xFF0D9488);
+  static const savings = sky;
+  static const purchases = gold;
 }
 
 class AppTheme {
   static ThemeData light() {
     final base = ColorScheme.fromSeed(
-      seedColor: FinnyColors.forest,
-      brightness: Brightness.light,
-      primary: FinnyColors.forest,
-      secondary: FinnyColors.sun,
-      tertiary: FinnyColors.coral,
-      surface: FinnyColors.cream,
+      seedColor: FinnyColors.purpleLight,
+      brightness: Brightness.dark,
+      primary: FinnyColors.purpleLight,
+      secondary: FinnyColors.gold,
+      tertiary: FinnyColors.pink,
+      surface: FinnyColors.purpleMid,
+      onSurface: FinnyColors.ink,
     );
 
-    final display = GoogleFonts.fredokaTextTheme();
-    final body = GoogleFonts.nunitoTextTheme();
+    final seed = ThemeData(
+      brightness: Brightness.dark,
+      useMaterial3: true,
+      fontFamily: FinnyFonts.body,
+    );
+    final body = seed.textTheme;
+    final display = seed.textTheme.apply(fontFamily: FinnyFonts.display);
 
     return ThemeData(
       useMaterial3: true,
+      brightness: Brightness.dark,
       colorScheme: base,
-      scaffoldBackgroundColor: FinnyColors.cream,
+      fontFamily: FinnyFonts.body,
+      scaffoldBackgroundColor: const Color(0xFF5B21B6),
+      splashFactory: InkRipple.splashFactory,
       textTheme: body.copyWith(
         displayLarge: display.displayLarge?.copyWith(
           color: FinnyColors.ink,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w400,
+          letterSpacing: 0,
         ),
         displayMedium: display.displayMedium?.copyWith(
           color: FinnyColors.ink,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w400,
         ),
         headlineLarge: display.headlineLarge?.copyWith(
-          color: FinnyColors.forest,
-          fontWeight: FontWeight.w700,
-          fontSize: 32,
+          color: FinnyColors.ink,
+          fontWeight: FontWeight.w400,
+          fontSize: 34,
+          height: 1.1,
         ),
         headlineMedium: display.headlineMedium?.copyWith(
-          color: FinnyColors.forest,
-          fontWeight: FontWeight.w700,
-          fontSize: 26,
+          color: FinnyColors.ink,
+          fontWeight: FontWeight.w400,
+          fontSize: 28,
+          height: 1.1,
         ),
         headlineSmall: display.headlineSmall?.copyWith(
           color: FinnyColors.ink,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w400,
           fontSize: 22,
+          height: 1.15,
         ),
         titleLarge: display.titleLarge?.copyWith(
           color: FinnyColors.ink,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w400,
           fontSize: 20,
         ),
         titleMedium: body.titleMedium?.copyWith(
           color: FinnyColors.ink,
-          fontWeight: FontWeight.w700,
-          fontSize: 18,
+          fontWeight: FontWeight.w800,
+          fontSize: 17,
         ),
         bodyLarge: body.bodyLarge?.copyWith(
           color: FinnyColors.ink,
-          fontSize: 17,
-          height: 1.35,
+          fontSize: 16,
+          height: 1.4,
+          fontWeight: FontWeight.w600,
         ),
         bodyMedium: body.bodyMedium?.copyWith(
           color: FinnyColors.ink,
-          fontSize: 16,
-          height: 1.35,
+          fontSize: 15,
+          height: 1.4,
+          fontWeight: FontWeight.w600,
         ),
         labelLarge: body.labelLarge?.copyWith(
-          fontWeight: FontWeight.w700,
-          fontSize: 16,
+          fontWeight: FontWeight.w800,
+          fontSize: 15,
         ),
       ),
       appBarTheme: AppBarTheme(
         centerTitle: false,
         elevation: 0,
+        scrolledUnderElevation: 0,
         backgroundColor: Colors.transparent,
         foregroundColor: FinnyColors.ink,
         titleTextStyle: display.titleLarge?.copyWith(
           color: FinnyColors.ink,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w400,
           fontSize: 22,
         ),
+        iconTheme: const IconThemeData(color: FinnyColors.ink),
       ),
       cardTheme: CardThemeData(
-        color: FinnyColors.card,
+        color: FinnyColors.card.withValues(alpha: 0.55),
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: BorderSide(color: FinnyColors.leaf.withValues(alpha: 0.45)),
+          borderRadius: BorderRadius.circular(24),
+          side: const BorderSide(color: FinnyColors.line),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: FinnyColors.forest,
+          backgroundColor: FinnyColors.purpleLight,
           foregroundColor: Colors.white,
-          minimumSize: const Size.fromHeight(54),
+          disabledBackgroundColor: FinnyColors.purpleMid,
+          disabledForegroundColor: FinnyColors.mist,
+          minimumSize: const Size.fromHeight(56),
+          elevation: 0,
+          shadowColor: FinnyColors.purpleLight.withValues(alpha: 0.5),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(20),
           ),
-          textStyle: body.labelLarge?.copyWith(
-            fontWeight: FontWeight.w800,
-            fontSize: 17,
+          textStyle: display.labelLarge?.copyWith(
+            fontWeight: FontWeight.w400,
+            fontSize: 18,
           ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: FinnyColors.forest,
-          minimumSize: const Size.fromHeight(54),
-          side: const BorderSide(color: FinnyColors.mint, width: 2),
+          foregroundColor: FinnyColors.ink,
+          minimumSize: const Size.fromHeight(56),
+          side: const BorderSide(color: FinnyColors.line, width: 1.5),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),
-          textStyle: body.labelLarge?.copyWith(
-            fontWeight: FontWeight.w700,
-            fontSize: 16,
-          ),
+          textStyle: body.labelLarge?.copyWith(fontWeight: FontWeight.w800),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: FinnyColors.purpleBright,
+          textStyle: body.labelLarge?.copyWith(fontWeight: FontWeight.w800),
         ),
       ),
       chipTheme: ChipThemeData(
-        selectedColor: FinnyColors.leaf,
-        backgroundColor: FinnyColors.sky,
-        labelStyle: body.bodyMedium!.copyWith(fontWeight: FontWeight.w700),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        selectedColor: FinnyColors.purpleLight,
+        backgroundColor: Colors.white.withValues(alpha: 0.06),
+        secondarySelectedColor: FinnyColors.purpleLight,
+        labelStyle: body.bodyMedium!.copyWith(
+          fontWeight: FontWeight.w700,
+          color: FinnyColors.ink,
+        ),
+        secondaryLabelStyle: body.bodyMedium!.copyWith(
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
+        ),
+        side: const BorderSide(color: FinnyColors.line),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(99)),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        checkmarkColor: Colors.white,
+      ),
+      sliderTheme: SliderThemeData(
+        activeTrackColor: FinnyColors.purpleBright,
+        inactiveTrackColor: Colors.white.withValues(alpha: 0.1),
+        thumbColor: FinnyColors.gold,
+        overlayColor: FinnyColors.purpleLight.withValues(alpha: 0.2),
+        trackHeight: 6,
+      ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: FinnyColors.purpleBright,
+        linearTrackColor: Colors.white.withValues(alpha: 0.1),
       ),
       dialogTheme: DialogThemeData(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        backgroundColor: FinnyColors.purpleMid,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(28),
+          side: const BorderSide(color: FinnyColors.line),
+        ),
+        titleTextStyle: display.titleLarge?.copyWith(
+          color: FinnyColors.ink,
+          fontSize: 22,
+        ),
       ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: Colors.white.withValues(alpha: 0.06),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: FinnyColors.line),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: FinnyColors.line),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: FinnyColors.purpleBright),
+        ),
+        hintStyle: TextStyle(color: FinnyColors.mist.withValues(alpha: 0.8)),
+      ),
+      tabBarTheme: TabBarThemeData(
+        labelColor: FinnyColors.purpleBright,
+        unselectedLabelColor: FinnyColors.mist,
+        indicatorColor: FinnyColors.purpleLight,
+        indicatorSize: TabBarIndicatorSize.label,
+        dividerColor: Colors.transparent,
+        labelStyle: body.labelLarge?.copyWith(fontWeight: FontWeight.w800),
+      ),
+      dividerTheme: const DividerThemeData(
+        color: FinnyColors.line,
+        thickness: 1,
+        space: 1,
+      ),
+      iconTheme: const IconThemeData(color: FinnyColors.ink),
     );
   }
 }
 
-/// Мягкий игровой фон с градиентом и «монетками».
+/// Пути к комнатам вкладок нижнего дока.
+abstract final class FinnyRooms {
+  static const home = 'assets/images/room_home_bg.png';
+  static const quests = 'assets/images/room_quests_bg.png';
+  static const shop = 'assets/images/room_shop_bg.png';
+  static const savings = 'assets/images/room_savings_bg.png';
+  static const budget = 'assets/images/room_budget_bg.png';
+}
+
+/// Яркий градиент 7–8 лет + опциональная комната (картинка) под вкладку.
 class PlayBackground extends StatelessWidget {
-  const PlayBackground({super.key, required this.child});
+  const PlayBackground({
+    super.key,
+    required this.child,
+    this.roomAsset,
+    this.scrimTop = 0.28,
+    this.scrimBottom = 0.22,
+  });
 
   final Widget child;
 
+  /// Если задан — рисуем иллюстрацию комнаты поверх градиента.
+  final String? roomAsset;
+
+  /// Затемнение сверху (читаемость AppBar / HUD).
+  final double scrimTop;
+
+  /// Затемнение снизу (читаемость кнопок / списков).
+  final double scrimBottom;
+
   @override
   Widget build(BuildContext context) {
+    final room = roomAsset;
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+    final screenW = MediaQuery.sizeOf(context).width;
+    final bgCacheW = (screenW * dpr).round().clamp(720, 1600);
     return DecoratedBox(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
           colors: [
-            Color(0xFFE8F8F1),
-            Color(0xFFF7FBFA),
-            Color(0xFFFFF6E0),
+            Color(0xFF5B21B6),
+            Color(0xFF7C3AED),
+            Color(0xFFDB2777),
+            Color(0xFFFBBF24),
           ],
-          stops: [0, 0.55, 1],
+          stops: [0.0, 0.35, 0.72, 1.0],
         ),
       ),
       child: Stack(
+        fit: StackFit.expand,
         children: [
-          Positioned(
-            top: -40,
-            right: -30,
-            child: _Blob(color: FinnyColors.leaf.withValues(alpha: 0.35), size: 160),
-          ),
-          Positioned(
-            bottom: 80,
-            left: -50,
-            child: _Blob(color: FinnyColors.sun.withValues(alpha: 0.22), size: 180),
-          ),
-          child,
+          if (room != null)
+            Positioned.fill(
+              child: Image.asset(
+                room,
+                fit: BoxFit.cover,
+                alignment: const Alignment(0, -0.15),
+                filterQuality: FilterQuality.high,
+                gaplessPlayback: true,
+                cacheWidth: bgCacheW,
+                errorBuilder: (context, error, stack) =>
+                    const SizedBox.shrink(),
+              ),
+            )
+          else ...[
+            Positioned(
+              top: -120,
+              right: -60,
+              child: _MeshBlob(
+                size: 320,
+                colors: [
+                  Colors.white.withValues(alpha: 0.18),
+                  Colors.white.withValues(alpha: 0),
+                ],
+              ),
+            ),
+            Positioned(
+              bottom: -80,
+              left: -80,
+              child: _MeshBlob(
+                size: 280,
+                colors: [
+                  FinnyColors.gold.withValues(alpha: 0.28),
+                  FinnyColors.gold.withValues(alpha: 0),
+                ],
+              ),
+            ),
+            const Positioned.fill(child: IgnorePointer(child: _StarsField())),
+          ],
+          if (room != null)
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: scrimTop),
+                      Colors.transparent,
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: scrimBottom),
+                    ],
+                    stops: const [0.0, 0.16, 0.68, 1.0],
+                  ),
+                ),
+              ),
+            ),
+          Positioned.fill(child: child),
         ],
       ),
     );
   }
 }
 
-class _Blob extends StatelessWidget {
-  const _Blob({required this.color, required this.size});
-
-  final Color color;
-  final double size;
+class _StarsField extends StatelessWidget {
+  const _StarsField();
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+    return CustomPaint(painter: _StarsPainter());
+  }
+}
+
+class _StarsPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rnd = math.Random(42);
+    final paint = Paint()..color = Colors.white;
+    for (var i = 0; i < 28; i++) {
+      final x = rnd.nextDouble() * size.width;
+      final y = rnd.nextDouble() * size.height;
+      final r = 0.6 + rnd.nextDouble() * 1.8;
+      paint.color = Colors.white.withValues(alpha: 0.2 + rnd.nextDouble() * 0.35);
+      canvas.drawCircle(Offset(x, y), r, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _MeshBlob extends StatelessWidget {
+  const _MeshBlob({required this.size, required this.colors});
+
+  final double size;
+  final List<Color> colors;
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: RadialGradient(colors: colors),
+        ),
+      ),
     );
   }
 }
 
+/// Glass-карточка из Figma (`card-glass`).
 class SoftCard extends StatelessWidget {
   const SoftCard({
     super.key,
     required this.child,
-    this.padding = const EdgeInsets.all(16),
+    this.padding = const EdgeInsets.all(18),
     this.color,
     this.onTap,
+    this.radius = 24,
   });
 
   final Widget child;
   final EdgeInsets padding;
   final Color? color;
   final VoidCallback? onTap;
+  final double radius;
 
   @override
   Widget build(BuildContext context) {
-    final content = Container(
-      width: double.infinity,
-      padding: padding,
+    final borderRadius = BorderRadius.circular(radius);
+    // Тёмное стекло — читается на ярком градиенте 7–8.
+    final fill = color ?? Colors.black.withValues(alpha: 0.28);
+    final content = Material(
+      color: fill,
+      child: onTap == null
+          ? Padding(padding: padding, child: child)
+          : InkWell(
+              onTap: onTap,
+              child: Padding(padding: padding, child: child),
+            ),
+    );
+    return Container(
       decoration: BoxDecoration(
-        color: color ?? FinnyColors.card,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: FinnyColors.leaf.withValues(alpha: 0.4)),
+        borderRadius: borderRadius,
+        border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
         boxShadow: [
           BoxShadow(
-            color: FinnyColors.forest.withValues(alpha: 0.06),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
+            color: Colors.black.withValues(alpha: 0.25),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: child,
+      child: ClipRRect(
+        borderRadius: borderRadius,
+        // BackdropFilter на web + много карточек → тяжёлый CanvasKit и сбои.
+        child: kIsWeb
+            ? content
+            : BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: content,
+              ),
+      ),
     );
-    if (onTap == null) return content;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: content,
+  }
+}
+
+class GlassAppBar extends StatelessWidget implements PreferredSizeWidget {
+  const GlassAppBar({
+    super.key,
+    this.title,
+    this.actions,
+    this.leading,
+    this.bottom,
+  });
+
+  final Widget? title;
+  final List<Widget>? actions;
+  final Widget? leading;
+  final PreferredSizeWidget? bottom;
+
+  @override
+  Size get preferredSize => Size.fromHeight(
+        kToolbarHeight + (bottom?.preferredSize.height ?? 0),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+        child: AppBar(
+          title: title,
+          actions: actions,
+          leading: leading,
+          bottom: bottom,
+          backgroundColor: const Color(0xFF5B21B6).withValues(alpha: 0.78),
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+        ),
+      ),
+    );
+  }
+}
+
+class SectionLabel extends StatelessWidget {
+  const SectionLabel(this.text, {super.key});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: FinnyFonts.fredoka(
+        color: FinnyColors.ink,
+        fontWeight: FontWeight.w400,
+        fontSize: 20,
+      ),
+    );
+  }
+}
+
+/// Бейдж монет как в Figma.
+class CoinBadge extends StatelessWidget {
+  const CoinBadge({super.key, required this.amount, this.suffix = '₽'});
+
+  final int amount;
+  final String suffix;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: FinnyColors.gold.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(99),
+        border: Border.all(color: FinnyColors.gold.withValues(alpha: 0.4)),
+      ),
+      child: Text(
+        '$amount$suffix',
+        style: FinnyFonts.nunito(
+          color: FinnyColors.gold,
+          fontWeight: FontWeight.w800,
+          fontSize: 13,
+        ),
       ),
     );
   }
