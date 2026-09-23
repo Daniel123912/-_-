@@ -8,7 +8,11 @@ import '../../theme/app_theme.dart';
 import '../widgets/common.dart';
 
 class BudgetScreen extends ConsumerStatefulWidget {
-  const BudgetScreen({super.key});
+  const BudgetScreen({super.key, this.popOnSuccess = false});
+
+  /// Когда экран открыт через Navigator.push (средний/старший трек).
+  /// В junior-доке pop ломает весь шелл — не вызывать.
+  final bool popOnSuccess;
 
   @override
   ConsumerState<BudgetScreen> createState() => _BudgetScreenState();
@@ -18,11 +22,16 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
   double? mandatory;
   double? optional;
   double? savings;
+  double? gift;
 
   @override
   Widget build(BuildContext context) {
-    final profile = ref.watch(gameControllerProvider).value!;
-    final max = profile.balance.toDouble().clamp(20.0, 300.0).toDouble();
+    final profile = ref.watch(gameControllerProvider).value;
+    if (profile == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    final max = profile.balance.toDouble().clamp(0.0, 300.0).toDouble();
+    final sliderMax = max < 1 ? 1.0 : max;
     final suggested = GameEconomy.recommendedPlan(profile);
     final m = mandatory ??
         (profile.period.plan.total > 0
@@ -36,18 +45,24 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
         (profile.period.plan.total > 0
             ? profile.period.plan.savings.toDouble()
             : suggested.savings.toDouble());
-    final total = m.round() + o.round() + s.round();
+    final g = gift ??
+        (profile.period.plan.total > 0
+            ? profile.period.plan.gift.toDouble()
+            : suggested.gift.toDouble());
+    final total = m.round() + o.round() + s.round() + g.round();
     final left = profile.balance - total;
     final locked = profile.period.phase != PeriodPhase.planning;
 
     return Scaffold(
       body: PlayBackground(
+        roomAsset: FinnyRooms.budget,
         child: CustomScrollView(
           slivers: [
             SliverAppBar(
               pinned: true,
               title: const Text('План бюджета'),
-              backgroundColor: FinnyColors.cream.withValues(alpha: 0.95),
+              backgroundColor: FinnyColors.bg.withValues(alpha: 0.78),
+              surfaceTintColor: Colors.transparent,
             ),
             SliverPadding(
               padding: const EdgeInsets.all(20),
@@ -58,14 +73,14 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Доступно: ${profile.balance} монет',
+                          'Доступно: ${profile.balance}',
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: 6),
                         Text(
                           locked
-                              ? 'План уже подтверждён. Сравни его с покупками в итоге периода.'
-                              : 'Распредели деньги до начала периода: нужное, желаемое, копилка. После подтверждения откроются задания.',
+                              ? 'План уже готов.'
+                              : 'Раздели монеты по корзинам.',
                         ),
                       ],
                     ),
@@ -79,6 +94,7 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
                           mandatory = plan.mandatory.toDouble();
                           optional = plan.optional.toDouble();
                           savings = plan.savings.toDouble();
+                          gift = plan.gift.toDouble();
                         });
                       },
                       icon: const Icon(Icons.auto_awesome),
@@ -91,27 +107,35 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
                       children: [
                         _SliderBlock(
                           label: 'Обязательное',
-                          value: m.clamp(0.0, max).toDouble(),
-                          max: max,
+                          value: m.clamp(0.0, sliderMax).toDouble(),
+                          max: sliderMax,
                           color: FinnyColors.budget,
                           enabled: !locked,
                           onChanged: (v) => setState(() => mandatory = v),
                         ),
                         _SliderBlock(
                           label: 'Желаемое',
-                          value: o.clamp(0.0, max).toDouble(),
-                          max: max,
+                          value: o.clamp(0.0, sliderMax).toDouble(),
+                          max: sliderMax,
                           color: FinnyColors.purchases,
                           enabled: !locked,
                           onChanged: (v) => setState(() => optional = v),
                         ),
                         _SliderBlock(
                           label: 'Накопления',
-                          value: s.clamp(0.0, max).toDouble(),
-                          max: max,
+                          value: s.clamp(0.0, sliderMax).toDouble(),
+                          max: sliderMax,
                           color: FinnyColors.savings,
                           enabled: !locked,
                           onChanged: (v) => setState(() => savings = v),
+                        ),
+                        _SliderBlock(
+                          label: 'Подарить',
+                          value: g.clamp(0.0, sliderMax).toDouble(),
+                          max: sliderMax,
+                          color: FinnyColors.pink,
+                          enabled: !locked,
+                          onChanged: (v) => setState(() => gift = v),
                         ),
                       ],
                     ),
@@ -135,21 +159,36 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
                   const SizedBox(height: 20),
                   if (!locked)
                     FilledButton(
-                      onPressed: () async {
-                        final plan = BudgetPlan(
-                          mandatory: m.round(),
-                          optional: o.round(),
-                          savings: s.round(),
-                        );
-                        final result = await ref
-                            .read(gameControllerProvider.notifier)
-                            .confirmBudget(plan);
-                        if (context.mounted) {
-                          await showFeedback(context, result.message,
-                              ok: result.ok);
-                          if (result.ok) Navigator.pop(context);
-                        }
-                      },
+                      onPressed: left < 0
+                          ? null
+                          : () async {
+                              final plan = BudgetPlan(
+                                mandatory: m.round(),
+                                optional: o.round(),
+                                savings: s.round(),
+                                gift: g.round(),
+                              );
+                              final result = await ref
+                                  .read(gameControllerProvider.notifier)
+                                  .confirmBudget(plan);
+                              if (!context.mounted) return;
+                              if (result.ok && result.celebrate) {
+                                await showCelebration(
+                                  context,
+                                  title: result.celebrateTitle ?? 'План вместе!',
+                                  message: result.message,
+                                );
+                              } else {
+                                await showFeedback(context, result.message,
+                                    ok: result.ok);
+                              }
+                              if (result.ok &&
+                                  widget.popOnSuccess &&
+                                  context.mounted &&
+                                  Navigator.of(context).canPop()) {
+                                Navigator.pop(context);
+                              }
+                            },
                       child: const Text('Подтвердить план'),
                     ),
                   if (locked) ...[
@@ -158,11 +197,11 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'План: обяз. ${profile.period.plan.mandatory}, жел. ${profile.period.plan.optional}, копилка ${profile.period.plan.savings}',
+                            'План: обяз. ${profile.period.plan.mandatory}, жел. ${profile.period.plan.optional}, копилка ${profile.period.plan.savings}, подарок ${profile.period.plan.gift}',
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Факт: обяз. ${profile.period.fact.mandatorySpent}, жел. ${profile.period.fact.optionalSpent}, копилка ${profile.period.fact.saved}',
+                            'Факт: обяз. ${profile.period.fact.mandatorySpent}, жел. ${profile.period.fact.optionalSpent}, копилка ${profile.period.fact.saved}, подарок ${profile.period.fact.giftSpent}',
                           ),
                           if (profile.period.activeQuestIds.isNotEmpty) ...[
                             const SizedBox(height: 8),

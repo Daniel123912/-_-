@@ -3,9 +3,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../domain/economy.dart';
 import '../../domain/models.dart';
 import '../../state/game_controller.dart';
 import '../../theme/app_theme.dart';
+import '../widgets/common.dart';
 
 class AdultGateScreen extends StatefulWidget {
   const AdultGateScreen({super.key});
@@ -43,7 +45,8 @@ class _AdultGateScreenState extends State<AdultGateScreen> {
             SliverAppBar(
               pinned: true,
               title: const Text('Раздел для взрослого'),
-              backgroundColor: FinnyColors.cream.withValues(alpha: 0.95),
+              backgroundColor: FinnyColors.bg.withValues(alpha: 0.78),
+              surfaceTintColor: Colors.transparent,
             ),
             SliverPadding(
               padding: const EdgeInsets.all(24),
@@ -75,7 +78,7 @@ class _AdultGateScreenState extends State<AdultGateScreen> {
                           labelText: 'Ответ',
                           errorText: error,
                           filled: true,
-                          fillColor: Colors.white,
+                          fillColor: Color(0x14FFFFFF),
                         ),
                         style: const TextStyle(fontSize: 18),
                       ),
@@ -120,7 +123,8 @@ class AdultPanelScreen extends ConsumerWidget {
             SliverAppBar(
               pinned: true,
               title: const Text('Прогресс и настройки'),
-              backgroundColor: FinnyColors.cream.withValues(alpha: 0.95),
+              backgroundColor: FinnyColors.bg.withValues(alpha: 0.78),
+              surfaceTintColor: Colors.transparent,
             ),
             SliverPadding(
               padding: const EdgeInsets.all(20),
@@ -145,7 +149,13 @@ class AdultPanelScreen extends ConsumerWidget {
                           Text(
                             'Заданий выполнено: ${profile.completedQuestIds.length}',
                           ),
-                          Text('Стадия роста: ${profile.growthStage}'),
+                          Text(
+                            'Стадия роста: ${profile.growthStage} «${GameEconomy.stageTitle(profile.growthStage)}»',
+                          ),
+                          Text(
+                            'Хороших периодов подряд: ${profile.goodPeriodStreak}/2',
+                          ),
+                          Text(GameEconomy.stageProgressHint(profile)),
                           Text('★ ${profile.stars} · XP ${profile.skills.totalXp}'),
                           Text(
                             'Навыки: бюджет ур.${profile.skills.levelFor(QuestTheme.budget)}, '
@@ -162,8 +172,17 @@ class AdultPanelScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            'Уровень обучения ребёнка',
+                            'Возраст и сложность заданий',
                             style: TextStyle(fontWeight: FontWeight.w800),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Уровень ${profile.ageTrack.label}: только подходящие '
+                            'задания и уроки. Для 7–8 лет — «Попроще».',
+                            style: TextStyle(
+                              color: FinnyColors.mist,
+                              fontSize: 13,
+                            ),
                           ),
                           const SizedBox(height: 8),
                           ...AgeTrack.values.map(
@@ -171,7 +190,9 @@ class AdultPanelScreen extends ConsumerWidget {
                               contentPadding: EdgeInsets.zero,
                               value: track,
                               groupValue: profile.ageTrack,
-                              title: Text('${track.label} · ${track.shortLabel}'),
+                              title: Text(
+                                '${track.label} · ${track.difficultyLabel}',
+                              ),
                               subtitle: Text(track.description),
                               onChanged: (v) {
                                 if (v != null) {
@@ -185,11 +206,116 @@ class AdultPanelScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
+                    const SizedBox(height: 12),
+                    SoftCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Text(
+                            'Режим «вместе с родителем»',
+                            style: TextStyle(fontWeight: FontWeight.w800),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            '1) Дай монеты  2) Ребёнок составляет план / копит  '
+                            '3) (по желанию) челлендж копилки.\n'
+                            'Выдано ${profile.parentGrantTotal}/${GameEconomy.parentGrantCap}. '
+                            '${profile.parentCoplayPending ? 'Сейчас ждём план ребёнка (+${profile.parentCoplayAmount}).' : 'Можно не использовать.'}',
+                            style: TextStyle(
+                              color: FinnyColors.mist,
+                              fontSize: 13,
+                              height: 1.35,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          FilledButton.icon(
+                            onPressed: () async {
+                              final result = await ref
+                                  .read(gameControllerProvider.notifier)
+                                  .grantParentCoins();
+                              if (!context.mounted) return;
+                              if (result.ok && result.celebrate) {
+                                await showCelebration(
+                                  context,
+                                  title:
+                                      result.celebrateTitle ?? 'Режим вместе!',
+                                  message: result.message,
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(result.message)),
+                                );
+                              }
+                            },
+                            icon: const Icon(Icons.favorite_rounded),
+                            label: Text(
+                              'Вместе: +${GameEconomy.parentGrantAmount} монет ребёнку',
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Челлендж недели',
+                            style: TextStyle(fontWeight: FontWeight.w800),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            profile.parentChallengeTarget == null
+                                ? 'Задай цель: сколько монет ребёнок отложит в копилку.'
+                                : 'Активно: ${profile.parentChallengeSaved}/${profile.parentChallengeTarget}. '
+                                    'Ребёнок видит это как миссию с питомцем.',
+                          ),
+                          const SizedBox(height: 10),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              for (final amount in [20, 40, 60])
+                                FilledButton.tonal(
+                                  onPressed: () async {
+                                    final result = await ref
+                                        .read(gameControllerProvider.notifier)
+                                        .setParentChallenge(amount);
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: Text(result.message),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  child: Text('Цель $amount'),
+                                ),
+                              if (profile.parentChallengeTarget != null)
+                                TextButton(
+                                  onPressed: () async {
+                                    await ref
+                                        .read(gameControllerProvider.notifier)
+                                        .clearParentChallenge();
+                                  },
+                                  child: const Text('Снять челлендж'),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Звук'),
+                      subtitle: const Text(
+                        'Короткие звуки при покупках, копилке и заданиях. Вибрация не отключается.',
+                      ),
+                      value: profile.soundEnabled,
+                      onChanged: (v) => ref
+                          .read(gameControllerProvider.notifier)
+                          .setSoundEnabled(v),
+                    ),
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
                       title: const Text('Демо-режим'),
-                      subtitle: const Text(
-                        'Периоды идут подряд без ожидания календарных сроков.',
+                      subtitle: Text(
+                        'Периоды идут подряд без ожидания. Выключите — пауза ~${GameEconomy.formatDurationShort(GameEconomy.normalPeriodCooldown)} между периодами.',
                       ),
                       value: profile.demoMode,
                       onChanged: (v) => ref

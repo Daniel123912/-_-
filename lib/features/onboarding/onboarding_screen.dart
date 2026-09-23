@@ -18,18 +18,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   static const _pages = [
     (
       title: 'Питомец Финни',
-      body: 'Игра, где ты учишься управлять деньгами вместе с питомцем.',
-      icon: Icons.pets,
+      body: 'Учись деньгам вместе с питомцем.',
+      icon: Icons.pets_rounded,
     ),
     (
       title: 'Три решения',
-      body: 'Потратить на нужное, на желаемое или отложить в копилку.',
-      icon: Icons.account_balance_wallet,
+      body: 'Нужное, желаемое или копилка.',
+      icon: Icons.account_balance_wallet_rounded,
     ),
     (
-      title: 'Учись по возрасту',
-      body: 'Задания делятся на лёгкие, средние и сложные — под твой уровень.',
-      icon: Icons.school,
+      title: 'По возрасту',
+      body: 'Задания под твой уровень.',
+      icon: Icons.school_rounded,
     ),
   ];
 
@@ -45,10 +45,29 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       body: PlayBackground(
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Text(
+                  'Финни',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                        fontSize: 42,
+                        color: FinnyColors.gold,
+                      ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'денежная игра с питомцем',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: FinnyColors.mist,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                    letterSpacing: 0.4,
+                  ),
+                ),
                 Expanded(
                   child: PageView.builder(
                     controller: _page,
@@ -57,55 +76,62 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     itemBuilder: (context, i) {
                       final p = _pages[i];
                       return Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const SizedBox(height: 24),
-                          Text(
-                            'Финни',
-                            textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.headlineLarge,
-                          ),
-                          const SizedBox(height: 28),
                           SoftCard(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 36,
+                              horizontal: 28,
+                              vertical: 40,
                             ),
                             child: Column(
                               children: [
                                 Container(
-                                  width: 88,
-                                  height: 88,
+                                  width: 96,
+                                  height: 96,
                                   decoration: BoxDecoration(
-                                    color: FinnyColors.sky,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: FinnyColors.mint,
-                                      width: 3,
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        FinnyColors.purpleLight,
+                                        FinnyColors.indigo,
+                                      ],
                                     ),
+                                    borderRadius: BorderRadius.circular(28),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: FinnyColors.purpleLight
+                                            .withValues(alpha: 0.45),
+                                        blurRadius: 24,
+                                        offset: const Offset(0, 10),
+                                      ),
+                                    ],
                                   ),
                                   child: Icon(
                                     p.icon,
                                     size: 44,
-                                    color: FinnyColors.forest,
+                                    color: FinnyColors.gold,
                                   ),
                                 ),
-                                const SizedBox(height: 24),
+                                const SizedBox(height: 28),
                                 Text(
                                   p.title,
                                   textAlign: TextAlign.center,
-                                  style: Theme.of(context).textTheme.headlineSmall,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineSmall
+                                      ?.copyWith(fontWeight: FontWeight.w800),
                                 ),
                                 const SizedBox(height: 12),
                                 Text(
                                   p.body,
                                   textAlign: TextAlign.center,
-                                  style: Theme.of(context).textTheme.bodyLarge,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge
+                                      ?.copyWith(color: FinnyColors.mist),
                                 ),
                               ],
                             ),
                           ),
-                          const Spacer(),
                         ],
                       );
                     },
@@ -116,25 +142,26 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   children: List.generate(
                     _pages.length,
                     (i) => AnimatedContainer(
-                      duration: const Duration(milliseconds: 250),
+                      duration: const Duration(milliseconds: 280),
+                      curve: Curves.easeOutCubic,
                       margin: const EdgeInsets.symmetric(horizontal: 4),
-                      width: _index == i ? 22 : 8,
+                      width: _index == i ? 28 : 8,
                       height: 8,
                       decoration: BoxDecoration(
                         color: _index == i
-                            ? FinnyColors.forest
-                            : FinnyColors.leaf,
-                        borderRadius: BorderRadius.circular(8),
+                            ? FinnyColors.purpleBright
+                            : FinnyColors.line,
+                        borderRadius: BorderRadius.circular(99),
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
                 FilledButton(
                   onPressed: () {
                     if (_index < _pages.length - 1) {
                       _page.nextPage(
-                        duration: const Duration(milliseconds: 320),
+                        duration: const Duration(milliseconds: 360),
                         curve: Curves.easeOutCubic,
                       );
                     } else {
