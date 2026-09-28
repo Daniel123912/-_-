@@ -46,3 +46,30 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Local Netlify folder
+.netlify
+
+# Python / Node one-off tooling
+__pycache__/
+node_modules/
+package-lock.json
+
+# Temp art sources & previews (final assets live in assets/)
+_pet_preview/
+_figma_design/
+модельки/
+картинки/
+_*.py
+_*.js
+_eye_debug.txt
+
+# Local archives / stray exports
+*.zip
+Group 4.png
+Untitled.svg
+tz_extract.txt
+
+# Built web export for Netlify (regenerate locally)
+netlify-deploy/
+

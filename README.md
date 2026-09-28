@@ -187,12 +187,12 @@ scripts\build_release.bat
 
 ## Демо-режим
 
-В разделе для взрослого (иконка на главном экране → арифметический барьер) включён демо-режим: периоды проходятся подряд без календарных сроков. Там же сброс тестового профиля.
+В разделе для взрослого (иконка на главном экране → арифметический барьер) включён **демо-режим**: периоды и задания без ожидания — удобно для экспертов. Вне демо пауза между периодами ~2 мин, обновление заданий ~5 мин. Там же сброс тестового профиля.
 
 ## Обязательный сценарий
 
 1. Онбординг (три типа решений)
-2. Создание локального профиля и питомца (9 комбинаций вида)
+2. Создание питомца: цвет (синий/розовый) × глаза × дополнение → имена → возраст
 3. Главный экран: баланс, копилка, состояние, задания
 4. План бюджета (обязательное / желаемое / накопления)
 5. Задания (≥6, темы: бюджет, накопления, покупки)
@@ -212,13 +212,45 @@ lib/
   features/   экраны
   state/      GameController
 assets/content/
-  items.json, goals.json, quests.json, pets.json
-docs/
-  economy_rules.md      формулы баланса, наград, роста питомца
-  requirements_matrix.md
+  items.json, goals.json, quests.json, lessons.json, pets.json
+docs/         сопроводительная документация (ТЗ §5)
 ```
 
-Формулы и правила игровой экономики: [`docs/economy_rules.md`](docs/economy_rules.md).
+### Документация для сдачи (кроме презентации)
+
+Реестр всех docs: [`docs/00_index.md`](docs/00_index.md)  
+Единый DOCX: [`docs/Finny_soprovoditelnaya_dokumentaciya.docx`](docs/Finny_soprovoditelnaya_dokumentaciya.docx)  
+Чеклист на 29 число: [`docs/submission_checklist_29.md`](docs/submission_checklist_29.md)
+
+#### Системный анализ (аналитик / middle)
+
+| Документ | Содержание |
+|----------|------------|
+| [`docs/system_analysis.md`](docs/system_analysis.md) | Концепция, акторы, границы, NFR, глоссарий, риски |
+| [`docs/functional_spec.md`](docs/functional_spec.md) | Функциональные требования FR + приёмка |
+| [`docs/use_cases.md`](docs/use_cases.md) | Каталог use case |
+| [`docs/user_stories.md`](docs/user_stories.md) | User stories по эпикам |
+| [`docs/business_processes.md`](docs/business_processes.md) | Жизненный цикл периода, BPMN-процессы |
+| [`docs/screens_navigation.md`](docs/screens_navigation.md) | Карта экранов и навигация |
+
+#### Сопроводительная документация ТЗ §5
+
+| Пункт ТЗ §5 | Файл |
+|-------------|------|
+| Сборка APK | [`docs/build_guide.md`](docs/build_guide.md) |
+| Архитектура | [`docs/architecture.md`](docs/architecture.md) |
+| Структура данных | [`docs/data_structures.md`](docs/data_structures.md) |
+| Матрица требований | [`docs/requirements_matrix.md`](docs/requirements_matrix.md) |
+| Формулы экономики | [`docs/economy_rules.md`](docs/economy_rules.md) |
+| Карта обучения | [`docs/education_content_map.md`](docs/education_content_map.md) |
+| UX / доступность | [`docs/ux_accessibility.md`](docs/ux_accessibility.md) |
+| Разрешения и данные | [`docs/privacy_permissions.md`](docs/privacy_permissions.md) |
+| Тест-кейсы | [`docs/test_cases.md`](docs/test_cases.md) |
+| Отчёт с устройства | [`docs/device_test_report.md`](docs/device_test_report.md) |
+| Ограничения и план | [`docs/limitations_roadmap.md`](docs/limitations_roadmap.md) |
+| Лицензии | [`docs/licenses.md`](docs/licenses.md) |
+| Инструкция эксперта | [`docs/demo_instruction.md`](docs/demo_instruction.md) |
+| RuStore | [`docs/rustore_card.md`](docs/rustore_card.md) |
 
 ## Обучение по возрасту
 
@@ -234,13 +266,14 @@ docs/
 
 ## Контент MVP
 
-| Элемент | Минимум в прототипе |
-|---------|---------------------|
-| Питомец | 3×3×3 = 9 комбинаций |
-| Покупки | 8 |
-| Цели | 3 |
-| Задания | 12 (3 темы × сложности) |
-| Стадии роста | 3 |
+| Элемент | Минимум ТЗ | Факт в прототипе |
+|---------|------------|-----------------|
+| Питомец | ≥ 2 различимые внешности | 27 обликов (3 стадии роста × 3 цвета × 3 дополнения) + эмоции |
+| Покупки | ≥ 8 | 25 |
+| Цели | ≥ 3 | 5 |
+| Задания | ≥ 6 | 155 (есть интерактив «разложи по корзинам») |
+| Уроки | — | 18 |
+| Стадии роста | 3 | 3 |
 
 ## RuStore
 

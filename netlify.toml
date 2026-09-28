@@ -1,0 +1,10 @@
+# Manual/CLI publish folder (prebuilt Flutter web).
+# Build locally: flutter build web --release
+# Then copy/sync to netlify-deploy, or: netlify deploy --dir=build/web --prod
+
+[build]
+  publish = "netlify-deploy"
+  command = "echo Using prebuilt Flutter web in netlify-deploy"
+
+# Do NOT add a catch-all /* -> /index.html rewrite.
+# It turns missing asset 404s into HTML and breaks Flutter JSON loading.
