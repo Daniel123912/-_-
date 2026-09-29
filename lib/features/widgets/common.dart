@@ -1,12 +1,25 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../domain/economy.dart';
 import '../../domain/engagement.dart';
 import '../../domain/models.dart';
 import '../../theme/app_theme.dart';
+
+/// Перекраска SVG (в т.ч. embedded PNG) — в isolate, иначе UI замирает на секунды.
+class _SvgRecolorJob {
+  const _SvgRecolorJob(this.raw, this.eyes);
+  final String raw;
+  final String eyes;
+}
+
+String _svgRecolorIsolate(_SvgRecolorJob job) {
+  return PetAppearance.recolorEyeIris(job.raw, job.eyes);
+}
 
 class PetAvatar extends StatefulWidget {
   const PetAvatar({
@@ -48,23 +61,6 @@ class _PetAvatarState extends State<PetAvatar> with TickerProviderStateMixin {
   late final AnimationController _react;
   bool _showHeart = false;
   bool _showTear = false;
-
-  Color get _color {
-    return switch (widget.appearance.color) {
-      'розовый' => const Color(0xFFBE608A),
-      'фиолетовый' => const Color(0xFF8B5CF6),
-      'синий' => const Color(0xFF6AA8C3),
-      _ => FinnyColors.purpleBright,
-    };
-  }
-
-  String get _accessoryLabel {
-    return switch (widget.appearance.accessory) {
-      'ромбики' => '◆',
-      'на голове' => '✦',
-      _ => '·',
-    };
-  }
 
   @override
   void initState() {
@@ -126,24 +122,13 @@ class _PetAvatarState extends State<PetAvatar> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final stage = widget.stage.clamp(1, 3);
-    // Заметная разница размеров: Малыш → Растущий → Чемпион.
-    final stageScale = !widget.scaleByStage
-        ? 1.0
-        : switch (stage) {
-            1 => 0.72,
-            2 => 1.0,
-            _ => 1.22,
-          };
+    // Все стадии одного размера (как малыш) — без скачка при росте.
+    final stageScale = !widget.scaleByStage ? 1.0 : 0.72;
     final floatAmp = widget.mood < 40 ? 3.5 : (stage == 3 ? 7.0 : 5.5);
     final stageLabel = switch (stage) {
       1 => 'Малыш',
       2 => 'Растущий',
       _ => 'Чемпион',
-    };
-    final ringColor = switch (stage) {
-      1 => const Color(0xFFDDD6FE),
-      2 => FinnyColors.sky,
-      _ => FinnyColors.gold,
     };
     // SVG / PNG модель: соотношение сторон по стадии роста.
     final aspect = switch (stage) {
@@ -159,14 +144,18 @@ class _PetAvatarState extends State<PetAvatar> with TickerProviderStateMixin {
       mood: widget.mood,
       stage: stage,
     );
-    final rasterPath = widget.appearance.rasterPathFor(
-      hunger: widget.hunger,
-      mood: widget.mood,
-      stage: stage,
-    );
-    final dpr = MediaQuery.devicePixelRatioOf(context);
-    // Растерам не даём «мылить» питомца: на больших экранах берём SVG.
-    final useSvg = petWidth * dpr > 360;
+    final stageModel = widget.appearance.modelForStage(stage);
+    final fallbackPath = 'assets/images/pets/$stageModel.svg';
+    final sidePad = math.max(56.0, petWidth * 0.42);
+    final toySize = math.min(petWidth * 0.48, 92.0);
+
+    // Игрушки сбоку: слева «комната», справа «в лапках» и остальное.
+    final leftToys = cosmetics
+        .where((c) => c.slot == CosmeticSlot.room)
+        .toList();
+    final rightToys = cosmetics
+        .where((c) => c.slot != CosmeticSlot.room)
+        .toList();
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -174,7 +163,7 @@ class _PetAvatarState extends State<PetAvatar> with TickerProviderStateMixin {
         GestureDetector(
           onTap: _handleTap,
           child: SizedBox(
-            width: petWidth + 48,
+            width: petWidth + sidePad * 2,
             height: petHeight + 48,
             child: RepaintBoundary(
               child: AnimatedBuilder(
@@ -209,73 +198,20 @@ class _PetAvatarState extends State<PetAvatar> with TickerProviderStateMixin {
                 alignment: Alignment.center,
                 clipBehavior: Clip.none,
                 children: [
-                  for (final c in cosmetics)
-                    if (c.slot == CosmeticSlot.room)
-                      Positioned(
-                        left: 0,
-                        top: widget.size * 0.05,
-                        child: _CosmeticBadge(
-                          visual: c,
-                          size: widget.size * 0.28,
-                        ),
-                      ),
-                  if (stage >= 2)
-                    Container(
-                      width: petWidth + (stage == 3 ? 36 : 24),
-                      height: petHeight + (stage == 3 ? 28 : 16),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(petHeight * 0.45),
-                        border: Border.all(
-                          color: ringColor.withValues(alpha: 0.45),
-                          width: stage == 3 ? 3 : 2,
-                        ),
-                        boxShadow: stage == 3
-                            ? [
-                                BoxShadow(
-                                  color: FinnyColors.gold.withValues(alpha: 0.3),
-                                  blurRadius: 24,
-                                  spreadRadius: 2,
-                                ),
-                              ]
-                            : null,
-                      ),
-                    ),
-                  if (stage == 3) ...[
+                  // Игрушки слева от питомца.
+                  for (var i = 0; i < leftToys.length; i++)
                     Positioned(
-                      left: 4,
-                      child: Icon(
-                        Icons.flare_rounded,
-                        size: widget.size * 0.22,
-                        color: FinnyColors.gold.withValues(alpha: 0.85),
+                      left: 2,
+                      bottom: petHeight * (0.12 + i * 0.28),
+                      width: toySize,
+                      height: toySize,
+                      child: _PetAttachedCosmetic(
+                        visual: leftToys[i],
+                        size: toySize * (i == 0 ? 1 : 0.85),
+                        tilt: 0.06,
                       ),
                     ),
-                    Positioned(
-                      right: 4,
-                      child: Icon(
-                        Icons.flare_rounded,
-                        size: widget.size * 0.22,
-                        color: FinnyColors.gold.withValues(alpha: 0.85),
-                      ),
-                    ),
-                  ],
-                  // Мягкая тень под питомцем
-                  Positioned(
-                    bottom: widget.size * 0.02,
-                    child: Container(
-                      width: petWidth * 0.72,
-                      height: 14,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(99),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.28),
-                            blurRadius: 18,
-                            spreadRadius: 1,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  // Сам питомец по центру.
                   SizedBox(
                     width: petWidth,
                     height: petHeight,
@@ -284,144 +220,48 @@ class _PetAvatarState extends State<PetAvatar> with TickerProviderStateMixin {
                       alignment: Alignment.center,
                       children: [
                         AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 480),
+                          duration: const Duration(milliseconds: 280),
                           switchInCurve: Curves.easeInOutSine,
                           switchOutCurve: Curves.easeInOutSine,
-                          transitionBuilder: (child, anim) {
-                            return FadeTransition(
-                              opacity: anim,
-                              child: ScaleTransition(
-                                scale: Tween<double>(begin: 0.97, end: 1)
-                                    .animate(anim),
-                                child: child,
-                              ),
-                            );
-                          },
-                          child: useSvg
-                              ? SvgPicture.asset(
-                                  svgPath,
-                                  key: ValueKey('$svgPath-$stage'),
-                                  width: petWidth,
-                                  height: petHeight,
-                                  fit: BoxFit.contain,
-                                  placeholderBuilder: (_) => SvgPicture.asset(
-                                    widget.appearance.assetPath,
-                                    width: petWidth,
-                                    height: petHeight,
-                                    fit: BoxFit.contain,
-                                  ),
-                                )
-                              : Image.asset(
-                                  rasterPath,
-                                  key: ValueKey('$rasterPath-$stage'),
-                                  width: petWidth,
-                                  height: petHeight,
-                                  fit: BoxFit.contain,
-                                  filterQuality: FilterQuality.high,
-                                  cacheWidth:
-                                      (petWidth * dpr).round().clamp(64, 720),
-                                  gaplessPlayback: true,
-                                  errorBuilder: (_, error, stackTrace) =>
-                                      SvgPicture.asset(
-                                    svgPath,
-                                    width: petWidth,
-                                    height: petHeight,
-                                    fit: BoxFit.contain,
-                                    placeholderBuilder: (_) =>
-                                        SvgPicture.asset(
-                                      widget.appearance.assetPath,
-                                      width: petWidth,
-                                      height: petHeight,
-                                      fit: BoxFit.contain,
-                                    ),
-                                  ),
-                                ),
+                          child: _RecoloredPetSvg(
+                            key: ValueKey(
+                              '$stageModel-$svgPath-${widget.appearance.eyes}-${widget.appearance.accessory}',
+                            ),
+                            assetPath: svgPath,
+                            fallbackPath: fallbackPath,
+                            eyes: widget.appearance.eyes,
+                            width: petWidth,
+                            height: petHeight,
+                          ),
                         ),
-                        if (stage >= 2)
-                          Positioned(
-                            top: petHeight * 0.02,
-                            child: Container(
-                              width: widget.size * 0.2,
-                              height: widget.size * 0.2,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                gradient: const LinearGradient(
-                                  colors: [
-                                    Color(0xFFFDE68A),
-                                    Color(0xFFD97706),
-                                  ],
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: FinnyColors.goldDark
-                                        .withValues(alpha: 0.5),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              child: Text(
-                                stage == 3 ? '★' : '₽',
-                                style: TextStyle(
-                                  fontSize: widget.size * 0.085,
-                                  fontWeight: FontWeight.w800,
-                                  color: const Color(0xFF92400E),
+                        // Дополнение внешности (ромбики / на голове) — на теле.
+                        if (widget.appearance.accessory != 'без')
+                          Positioned.fill(
+                            child: IgnorePointer(
+                              child: CustomPaint(
+                                painter: _PetAccessoryPainter(
+                                  accessory: widget.appearance.accessory,
+                                  color: widget.appearance.color,
                                 ),
                               ),
                             ),
                           ),
-                        Positioned(
-                          top: petHeight * 0.08,
-                          right: -2,
-                          child: Container(
-                            width: widget.size * 0.18,
-                            height: widget.size * 0.18,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: _color,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white70),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.2),
-                                  blurRadius: 6,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Text(
-                              _accessoryLabel,
-                              style: TextStyle(
-                                fontSize: widget.size * 0.08,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                   ),
-                  for (final c in cosmetics)
-                    if (c.slot == CosmeticSlot.head)
-                      Positioned(
-                        top: widget.size * 0.02,
-                        child: _CosmeticBadge(
-                          visual: c,
-                          size: widget.size * 0.32,
-                        ),
+                  // Игрушки справа от питомца.
+                  for (var i = 0; i < rightToys.length; i++)
+                    Positioned(
+                      right: 2,
+                      bottom: petHeight * (0.14 + i * 0.26),
+                      width: toySize,
+                      height: toySize,
+                      child: _PetAttachedCosmetic(
+                        visual: rightToys[i],
+                        size: toySize * (i == 0 ? 1 : 0.82),
+                        tilt: -0.08,
                       ),
-                  for (final c in cosmetics)
-                    if (c.slot == CosmeticSlot.held)
-                      Positioned(
-                        right: 0,
-                        bottom: widget.size * 0.12,
-                        child: _CosmeticBadge(
-                          visual: c,
-                          size: widget.size * 0.3,
-                        ),
-                      ),
+                    ),
                   AnimatedOpacity(
                     opacity: _showHeart ? 1 : 0,
                     duration: const Duration(milliseconds: 320),
@@ -484,39 +324,262 @@ class _PetAvatarState extends State<PetAvatar> with TickerProviderStateMixin {
   }
 }
 
-class _CosmeticBadge extends StatelessWidget {
-  const _CosmeticBadge({required this.visual, required this.size});
+/// SVG питомца с перекраской радужки под выбранный цвет глаз.
+class _RecoloredPetSvg extends StatefulWidget {
+  const _RecoloredPetSvg({
+    super.key,
+    required this.assetPath,
+    required this.fallbackPath,
+    required this.eyes,
+    required this.width,
+    required this.height,
+  });
 
-  final CosmeticVisual visual;
-  final double size;
+  final String assetPath;
+  final String fallbackPath;
+  final String eyes;
+  final double width;
+  final double height;
+
+  @override
+  State<_RecoloredPetSvg> createState() => _RecoloredPetSvgState();
+}
+
+class _RecoloredPetSvgState extends State<_RecoloredPetSvg> {
+  /// Кэш уже перекрашенных SVG — без вспышки малыша при смене вкладки.
+  static final Map<String, String> _cache = {};
+
+  late Future<String> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = _load();
+  }
+
+  @override
+  void didUpdateWidget(covariant _RecoloredPetSvg oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.assetPath != widget.assetPath ||
+        oldWidget.fallbackPath != widget.fallbackPath ||
+        oldWidget.eyes != widget.eyes) {
+      _future = _load();
+    }
+  }
+
+  Future<String> _load() async {
+    final key = '${widget.assetPath}|${widget.eyes}';
+    final hit = _cache[key];
+    if (hit != null) return hit;
+
+    String raw;
+    try {
+      raw = await rootBundle.loadString(widget.assetPath);
+    } catch (_) {
+      raw = await rootBundle.loadString(widget.fallbackPath);
+    }
+    final colored = await compute(
+      _svgRecolorIsolate,
+      _SvgRecolorJob(raw, widget.eyes),
+    );
+    _cache[key] = colored;
+    return colored;
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (visual.image.isNotEmpty) {
-      return SizedBox(
-        width: size,
-        height: size,
-        child: Image.asset(
-          visual.image,
-          fit: BoxFit.contain,
-          filterQuality: FilterQuality.high,
-          cacheWidth: (size * MediaQuery.devicePixelRatioOf(context))
-              .round()
-              .clamp(64, 512),
-          cacheHeight: (size * MediaQuery.devicePixelRatioOf(context))
-              .round()
-              .clamp(64, 512),
-          errorBuilder: (_, __, ___) => Icon(
-            Icons.toys_rounded,
-            size: size * 0.7,
-            color: FinnyColors.mist,
-          ),
-        ),
+    // Синхронный кэш — сразу правильная стадия, без кадра с малышом.
+    final cached = _cache['${widget.assetPath}|${widget.eyes}'];
+    if (cached != null) {
+      return SvgPicture.string(
+        cached,
+        width: widget.width,
+        height: widget.height,
+        fit: BoxFit.contain,
       );
     }
-    return Text(
-      visual.emoji,
-      style: TextStyle(fontSize: size * 0.85),
+
+    return FutureBuilder<String>(
+      future: _future,
+      builder: (context, snap) {
+        if (!snap.hasData) {
+          // Пусто, а не fallback малыша — иначе мигание при возврате на вкладку.
+          return SizedBox(width: widget.width, height: widget.height);
+        }
+        return SvgPicture.string(
+          snap.data!,
+          width: widget.width,
+          height: widget.height,
+          fit: BoxFit.contain,
+        );
+      },
+    );
+  }
+}
+
+/// Узор внешности: ромбики на теле или капельки на лбу.
+class _PetAccessoryPainter extends CustomPainter {
+  const _PetAccessoryPainter({
+    required this.accessory,
+    required this.color,
+  });
+
+  final String accessory;
+  final String color;
+
+  Color get _fill => switch (color) {
+        'розовый' => const Color(0xFF9A3F66),
+        'фиолетовый' => const Color(0xFF6D3BCF),
+        _ => const Color(0xFF3D7A96),
+      };
+
+  Color get _light => switch (color) {
+        'розовый' => const Color(0xFFF2C4D6),
+        'фиолетовый' => const Color(0xFFD7C5FF),
+        _ => const Color(0xFFC8E7F4),
+      };
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (accessory == 'ромбики') {
+      _paintBodyDiamonds(canvas, size);
+    } else if (accessory == 'на голове') {
+      _paintForeheadMarks(canvas, size);
+    }
+  }
+
+  void _paintBodyDiamonds(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = _fill.withValues(alpha: 0.88)
+      ..style = PaintingStyle.fill;
+    final highlight = Paint()
+      ..color = _light.withValues(alpha: 0.55)
+      ..style = PaintingStyle.fill;
+
+    // Овальные пятна по бокам туловища — как на эталонных thumbs.
+    final spots = <(double, double, double, double)>[
+      (0.22, 0.52, 0.07, 0.05),
+      (0.18, 0.60, 0.055, 0.04),
+      (0.28, 0.66, 0.06, 0.045),
+      (0.74, 0.50, 0.07, 0.05),
+      (0.78, 0.58, 0.055, 0.04),
+      (0.70, 0.65, 0.06, 0.045),
+      (0.34, 0.48, 0.045, 0.035),
+      (0.64, 0.47, 0.045, 0.035),
+    ];
+    for (final (nx, ny, rw, rh) in spots) {
+      final rect = Rect.fromCenter(
+        center: Offset(size.width * nx, size.height * ny),
+        width: size.width * rw,
+        height: size.height * rh,
+      );
+      canvas.drawOval(rect, paint);
+      canvas.drawOval(rect.deflate(rect.width * 0.28), highlight);
+    }
+  }
+
+  void _paintForeheadMarks(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = _light.withValues(alpha: 0.95)
+      ..style = PaintingStyle.fill;
+    final outline = Paint()
+      ..color = _fill.withValues(alpha: 0.55)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = size.shortestSide * 0.012
+      ..strokeJoin = StrokeJoin.round;
+
+    // Три капельки треугольником на лбу (между рожками).
+    final marks = <(double, double, double)>[
+      (0.50, 0.13, 0.055),
+      (0.43, 0.19, 0.045),
+      (0.57, 0.19, 0.045),
+    ];
+    for (final (nx, ny, scale) in marks) {
+      final path = _teardrop(
+        Offset(size.width * nx, size.height * ny),
+        size.width * scale,
+      );
+      canvas.drawPath(path, paint);
+      canvas.drawPath(path, outline);
+    }
+  }
+
+  Path _teardrop(Offset center, double r) {
+    final path = Path();
+    path.moveTo(center.dx, center.dy - r);
+    path.quadraticBezierTo(
+      center.dx + r * 0.95,
+      center.dy - r * 0.15,
+      center.dx,
+      center.dy + r * 0.85,
+    );
+    path.quadraticBezierTo(
+      center.dx - r * 0.95,
+      center.dy - r * 0.15,
+      center.dx,
+      center.dy - r,
+    );
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldRepaint(covariant _PetAccessoryPainter oldDelegate) {
+    return oldDelegate.accessory != accessory || oldDelegate.color != color;
+  }
+}
+
+class _PetAttachedCosmetic extends StatelessWidget {
+  const _PetAttachedCosmetic({
+    required this.visual,
+    required this.size,
+    this.tilt = 0,
+  });
+
+  final CosmeticVisual visual;
+  final double size;
+  final double tilt;
+
+  @override
+  Widget build(BuildContext context) {
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+    final px = (size * dpr).round().clamp(64, 512);
+
+    Widget content;
+    if (visual.image.isNotEmpty) {
+      content = Image.asset(
+        visual.image,
+        fit: BoxFit.contain,
+        filterQuality: FilterQuality.high,
+        cacheWidth: px,
+        cacheHeight: px,
+        errorBuilder: (_, __, ___) => Text(
+          visual.emoji,
+          style: TextStyle(fontSize: size * 0.72),
+        ),
+      );
+    } else {
+      content = Text(
+        visual.emoji,
+        style: TextStyle(fontSize: size * 0.72),
+      );
+    }
+
+    return Transform.rotate(
+      angle: tilt,
+      alignment: Alignment.center,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.18),
+              blurRadius: size * 0.06,
+              offset: Offset(0, size * 0.03),
+            ),
+          ],
+        ),
+        child: content,
+      ),
     );
   }
 }

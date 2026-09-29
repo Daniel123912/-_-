@@ -7,7 +7,8 @@
     "effectHint": "Питомец станет сытее.",
     "hungerDelta": 25,
     "moodDelta": 5,
-    "emoji": "🍽️"
+    "emoji": "🍽️",
+    "image": "assets/images/shop/food_bowl.png"
   },
   {
     "id": "water",
@@ -17,7 +18,8 @@
     "effectHint": "Важный уход каждый период.",
     "hungerDelta": 8,
     "moodDelta": 4,
-    "emoji": "💧"
+    "emoji": "💧",
+    "image": "assets/images/shop/water.png"
   },
   {
     "id": "grooming",
@@ -27,7 +29,8 @@
     "effectHint": "Уход поддерживает настроение.",
     "hungerDelta": 0,
     "moodDelta": 10,
-    "emoji": "🪥"
+    "emoji": "🪥",
+    "image": "assets/images/shop/grooming.png"
   },
   {
     "id": "vet_check",
@@ -37,7 +40,8 @@
     "effectHint": "Непредвиденный, но нужный расход.",
     "hungerDelta": 5,
     "moodDelta": 8,
-    "emoji": "🩺"
+    "emoji": "🩺",
+    "image": "assets/images/shop/vet_check.png"
   },
   {
     "id": "bath_soap",
@@ -345,7 +349,8 @@
     "effectHint": "Поделиться — тоже финансовое решение.",
     "hungerDelta": 0,
     "moodDelta": 14,
-    "emoji": "🎀"
+    "emoji": "🎀",
+    "image": "assets/images/shop/gift_friend.png"
   },
   {
     "id": "gift_charity",
@@ -355,6 +360,7 @@
     "effectHint": "Небольшая сумма на радость другим.",
     "hungerDelta": 0,
     "moodDelta": 12,
-    "emoji": "💝"
+    "emoji": "💝",
+    "image": "assets/images/shop/gift_charity.png"
   }
 ]

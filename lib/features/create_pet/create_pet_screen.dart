@@ -24,6 +24,7 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
 
   int step = 0; // 0 pet, 1 name, 2 age
   String color = 'синий';
+  String eyes = 'голубые';
   String accessory = 'без';
   AgeTrack ageTrack = AgeTrack.junior;
 
@@ -33,10 +34,9 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
     'Выбери возраст',
   ];
 
-  String get eyes => PetAppearance.eyesForColor(color);
-
   PetAppearance get appearance => PetAppearance.combo(
         color: color,
+        eyes: eyes,
         accessory: accessory,
       );
 
@@ -51,6 +51,7 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
     HapticFeedback.selectionClick();
     setState(() {
       color = content.colors[_rng.nextInt(content.colors.length)];
+      eyes = content.eyes[_rng.nextInt(content.eyes.length)];
       accessory =
           content.accessories[_rng.nextInt(content.accessories.length)];
     });
@@ -117,6 +118,7 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
                           eyes: eyes,
                           accessory: accessory,
                           onColor: (v) => setState(() => color = v),
+                          onEyes: (v) => setState(() => eyes = v),
                           onAccessory: (v) => setState(() => accessory = v),
                           onSurprise: () => _surprise(content),
                         ),
@@ -216,6 +218,7 @@ class _PetStep extends StatelessWidget {
     required this.eyes,
     required this.accessory,
     required this.onColor,
+    required this.onEyes,
     required this.onAccessory,
     required this.onSurprise,
   });
@@ -226,6 +229,7 @@ class _PetStep extends StatelessWidget {
   final String eyes;
   final String accessory;
   final ValueChanged<String> onColor;
+  final ValueChanged<String> onEyes;
   final ValueChanged<String> onAccessory;
   final VoidCallback onSurprise;
 
@@ -233,6 +237,12 @@ class _PetStep extends StatelessWidget {
         'розовый' => const Color(0xFFBE608A),
         'фиолетовый' => const Color(0xFF8B5CF6),
         _ => const Color(0xFF6AA8C3),
+      };
+
+  Color _eyeSwatch(String e) => switch (e) {
+        'карие' => const Color(0xFF3D2C0F),
+        'зелёные' => const Color(0xFF0F2F0E),
+        _ => const Color(0xFF143D52),
       };
 
   @override
@@ -247,7 +257,9 @@ class _PetStep extends StatelessWidget {
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 220),
             child: PetAvatar(
-              key: ValueKey(appearance.model),
+              key: ValueKey(
+                '${appearance.color}-${appearance.eyes}-${appearance.accessory}',
+              ),
               appearance: appearance,
               stage: 1,
               size: petSize,
@@ -289,13 +301,24 @@ class _PetStep extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 10),
-              Text(
-                'Глаза: $eyes (в комплекте с цветом)',
-                style: TextStyle(
-                  color: FinnyColors.mist,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
+              const SizedBox(height: 14),
+              _OptionRow(
+                title: 'Глаза',
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final e in content.eyes)
+                      _ColorChip(
+                        label: e,
+                        selected: eyes == e,
+                        swatch: _eyeSwatch(e),
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          onEyes(e);
+                        },
+                      ),
+                  ],
                 ),
               ),
               const SizedBox(height: 14),
@@ -332,7 +355,7 @@ class _PetStep extends StatelessWidget {
   }
 
   static String _addonLabel(String id) => switch (id) {
-        'ромбики' => 'Ромбики',
+        'ромбики' => 'На теле',
         'на голове' => 'На голове',
         _ => 'Без',
       };
@@ -502,7 +525,7 @@ class _AgeStep extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(
-          'Возраст — только сложность заданий.\nПитомец сам вырастет: малыш → растущий → чемпион.',
+          'Выбери уровень заданий.\nПитомец сам вырастет: малыш → растущий → чемпион.',
           textAlign: TextAlign.center,
           style: TextStyle(color: FinnyColors.mist, fontSize: 13),
         ),
@@ -514,7 +537,7 @@ class _AgeStep extends StatelessWidget {
           children: [
             for (final track in AgeTrack.values)
               ChoiceChip(
-                label: Text('${track.label} · ${track.difficultyLabel}'),
+                label: Text(track.shortLabel),
                 selected: ageTrack == track,
                 showCheckmark: true,
                 onSelected: (_) {
@@ -530,7 +553,7 @@ class _AgeStep extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                ageTrack.difficultyLabel,
+                ageTrack.shortLabel,
                 style: const TextStyle(
                   fontWeight: FontWeight.w800,
                   fontSize: 16,
@@ -540,7 +563,7 @@ class _AgeStep extends StatelessWidget {
               Text(ageTrack.description),
               const SizedBox(height: 8),
               Text(
-                'Для детей 7–8 лет лучше «Попроще».',
+                'Для старта лучше «ПРОСТОЙ».',
                 style: TextStyle(color: FinnyColors.mist, fontSize: 13),
               ),
             ],

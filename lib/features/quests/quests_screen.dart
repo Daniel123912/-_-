@@ -1,4 +1,6 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'dart:math' as math;
+
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/economy.dart';
@@ -140,8 +142,7 @@ class _QuestsScreenState extends ConsumerState<QuestsScreen> {
                   if (_catalogMode) ...[
                     const SizedBox(height: 8),
                     Text(
-                      'Показаны задания для ${profile.ageTrack.label} '
-                      '(${profile.ageTrack.difficultyLabel}).',
+                      'Показаны задания уровня ${profile.ageTrack.shortLabel}.',
                       style: TextStyle(
                         color: FinnyColors.mist,
                         fontSize: 13,
@@ -596,31 +597,38 @@ class QuestDetailScreen extends ConsumerWidget {
                       QuestInteraction.choice => const SizedBox.shrink(),
                     }
                   else if (!done)
-                    ...quest.options.map(
-                      (option) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: SoftCard(
-                          onTap: () => resolve(option),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  option.label,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                    ...(() {
+                      // Хаотичный порядок ответов (не всегда верный под №1).
+                      final options = List<QuestOption>.of(quest.options)
+                        ..shuffle(math.Random(quest.id.hashCode));
+                      return options
+                          .map(
+                            (option) => Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: SoftCard(
+                                onTap: () => resolve(option),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        option.label,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                    const Icon(
+                                      Icons.arrow_forward_rounded,
+                                      color: FinnyColors.ink,
+                                    ),
+                                  ],
                                 ),
                               ),
-                              const Icon(
-                                Icons.arrow_forward_rounded,
-                                color: FinnyColors.ink,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
+                            ),
+                          )
+                          .toList();
+                    })(),
                 ]),
               ),
             ),

@@ -52,7 +52,7 @@ class GameController extends AsyncNotifier<PlayerProfile?> {
       await _repo.save(profile);
     }
     try {
-      final content = await ContentLoader.load();
+      final content = await ref.read(contentProvider.future);
       final next =
           GameEconomy.applyDueQuestRefresh(profile, content.quests);
       if (!identical(next, profile) && next != profile) {
@@ -117,8 +117,8 @@ class GameController extends AsyncNotifier<PlayerProfile?> {
     await _persist(bumped.copyWith(
       period: nextPeriod,
       lastFeedback:
-          'Уровень: ${track.difficultyLabel} (${track.label}). '
-          'Задания и учёба обновлены под возраст.',
+          'Уровень: ${track.shortLabel}. '
+          'Задания и учёба обновлены.',
     ));
   }
 
@@ -338,7 +338,7 @@ class GameController extends AsyncNotifier<PlayerProfile?> {
     await _persist(profile.copyWith(
       soundEnabled: enabled,
       lastFeedback: enabled
-          ? 'Звук включён: покупки и задания будут со звуком.'
+          ? 'Звук включён: музыка и эффекты. Громкость — кнопками телефона.'
           : 'Звук выключен. Вибрация при действиях остаётся.',
     ));
   }

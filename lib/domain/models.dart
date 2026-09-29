@@ -1,3 +1,8 @@
+import 'dart:convert';
+import 'dart:math' as math;
+
+import 'package:image/image.dart' as img_lib;
+
 enum ExpenseKind { mandatory, optional, gift }
 
 enum QuestTheme { budget, savings, purchases }
@@ -20,17 +25,17 @@ extension AgeTrackX on AgeTrack {
         AgeTrack.senior => '11 лет',
       };
 
-  /// Формулировка «попроще / посложнее» без акцента на возраст (Q&A).
+  /// Формулировка сложности без акцента на возраст.
   String get difficultyLabel => switch (this) {
-        AgeTrack.junior => 'Попроще',
-        AgeTrack.middle => 'Средне',
-        AgeTrack.senior => 'Посложнее',
+        AgeTrack.junior => 'Простой',
+        AgeTrack.middle => 'Средний',
+        AgeTrack.senior => 'Сложный',
       };
 
   String get shortLabel => switch (this) {
-        AgeTrack.junior => 'Лёгкий',
-        AgeTrack.middle => 'Средний',
-        AgeTrack.senior => 'Сложный',
+        AgeTrack.junior => 'ПРОСТОЙ',
+        AgeTrack.middle => 'СРЕДНИЙ',
+        AgeTrack.senior => 'СЛОЖНЫЙ',
       };
 
   String get description => switch (this) {
@@ -352,19 +357,19 @@ class AgeLearnGuide {
           headline: 'Школа Финни',
           blurb: 'Короткие истории: нужное, желаемое и копилка.',
           petLine: 'Поиграй со мной!',
-          badge: 'Попроще',
+          badge: 'Простой',
         ),
         AgeTrack.middle => const AgeLearnGuide(
           headline: 'Мастерская плана',
           blurb: 'Делим деньги, копим и сравниваем цены.',
           petLine: 'Проверим план?',
-          badge: 'Средне',
+          badge: 'Средний',
         ),
         AgeTrack.senior => const AgeLearnGuide(
           headline: 'Штаб решений',
           blurb: 'План против факта и приоритеты при нехватке.',
           petLine: 'Сложный выбор — твой ход.',
-          badge: 'Посложнее',
+          badge: 'Сложный',
         ),
       };
 }
@@ -563,7 +568,7 @@ class PetAppearance {
   /// Цвет тела: `синий` | `розовый` | `фиолетовый`.
   final String color;
 
-  /// Цвет глаз (связан с телом): `голубые` | `карие` | `зелёные`.
+  /// Цвет глаз (выбирается отдельно): `голубые` | `карие` | `зелёные`.
   final String eyes;
 
   /// Дополнение: `без` | `ромбики` | `на голове`.
@@ -572,12 +577,113 @@ class PetAppearance {
   /// ID собранной модели → `assets/images/pets/<model>.svg`.
   final String model;
 
-  /// Глаза по цвету тела (наборы Полины: синий↔голуб, роз↔карие, фиол↔зел).
+  /// Глаза по умолчанию для цвета (если глаза не выбрали отдельно).
   static String eyesForColor(String color) => switch (color) {
         'розовый' => 'карие',
         'фиолетовый' => 'зелёные',
         _ => 'голубые',
       };
+
+  /// Iris fills in assembled SVG (голубые / карие / зелёные).
+  /// Тёмные «оригинальные» тона — как у junior / эталона.
+  static const Map<String, String> eyeIrisHex = {
+    'голубые': '#143D52',
+    'карие': '#3D2C0F',
+    'зелёные': '#0F2F0E',
+  };
+
+  /// Более яркие hex с промежуточной сборки — тоже перекрашиваем.
+  static const List<String> _eyeIrisHexLegacy = [
+    '#1A6B8C',
+    '#5C3A1A',
+    '#2F6B3A',
+  ];
+
+  /// Перекраска только радужки — цвет глаз независим от кожи.
+  static String recolorEyeIris(String svg, String eyes) {
+    final target = eyeIrisHex[eyes] ?? eyeIrisHex['голубые']!;
+    var out = svg;
+    final all = {...eyeIrisHex.values, ..._eyeIrisHexLegacy};
+    for (final hex in all) {
+      if (hex.toLowerCase() == target.toLowerCase()) continue;
+      out = out.replaceAll(hex, target);
+      out = out.replaceAll(hex.toLowerCase(), target);
+      out = out.replaceAll(hex.toUpperCase(), target);
+    }
+    // Middle/senior (embedded PNG): tint iris pixels, keep original eye look.
+    return recolorEmbeddedPngEyes(out, eyes);
+  }
+
+  /// If SVG has `<g id="eye-iris" data-lx=...>` + base64 PNG, recolor iris in-place.
+  static String recolorEmbeddedPngEyes(String svg, String eyes) {
+    final meta = RegExp(
+      r'id="eye-iris"[^>]*data-lx="(\d+)"[^>]*data-ly="(\d+)"[^>]*data-rx="(\d+)"[^>]*data-ry="(\d+)"[^>]*data-r="(\d+)"',
+    ).firstMatch(svg);
+    if (meta == null) return svg;
+
+    final b64Match = RegExp(
+      r'data:image/png;base64,([A-Za-z0-9+/=]+)',
+    ).firstMatch(svg);
+    if (b64Match == null) return svg;
+
+    final lx = int.parse(meta.group(1)!);
+    final ly = int.parse(meta.group(2)!);
+    final rx = int.parse(meta.group(3)!);
+    final ry = int.parse(meta.group(4)!);
+    final radius = int.parse(meta.group(5)!);
+    final hex = (eyeIrisHex[eyes] ?? eyeIrisHex['голубые']!).replaceFirst('#', '');
+    final tr = int.parse(hex.substring(0, 2), radix: 16);
+    final tg = int.parse(hex.substring(2, 4), radix: 16);
+    final tb = int.parse(hex.substring(4, 6), radix: 16);
+
+    try {
+      final raw = base64Decode(b64Match.group(1)!);
+      final decoded = img_lib.decodePng(raw);
+      if (decoded == null) return svg;
+      final r2 = radius * radius;
+      for (final center in [(lx, ly), (rx, ry)]) {
+        final cx = center.$1;
+        final cy = center.$2;
+        for (var y = cy - radius; y <= cy + radius; y++) {
+          for (var x = cx - radius; x <= cx + radius; x++) {
+            if (x < 0 || y < 0 || x >= decoded.width || y >= decoded.height) {
+              continue;
+            }
+            final dx = x - cx;
+            final dy = y - cy;
+            if (dx * dx + dy * dy > r2) continue;
+            final p = decoded.getPixel(x, y);
+            final a = p.a.toInt();
+            if (a < 120) continue;
+            final pr = p.r.toInt();
+            final pg = p.g.toInt();
+            final pb = p.b.toInt();
+            // keep white sparkles
+            if (pr > 185 && pg > 185 && pb > 185) continue;
+            final v = (pr + pg + pb) / 3.0;
+            // Only dark iris/pupil — never tint skin near the eye.
+            if (v > 85) continue;
+            final maxc = math.max(pr, math.max(pg, pb));
+            final minc = math.min(pr, math.min(pg, pb));
+            // skip saturated skin tones (pink/blue body) that aren't eye
+            if (maxc - minc > 45 && v > 55) continue;
+            // map luminance onto target iris (original glossy look)
+            final scale = (v / 55.0).clamp(0.2, 1.4);
+            final nr = (tr * scale).round().clamp(0, 255);
+            final ng = (tg * scale).round().clamp(0, 255);
+            final nb = (tb * scale).round().clamp(0, 255);
+            decoded.setPixelRgba(x, y, nr, ng, nb, a);
+          }
+        }
+      }
+      final encoded = base64Encode(img_lib.encodePng(decoded));
+      return svg.replaceAll(b64Match.group(1)!, encoded);
+    } catch (_) {
+      return svg;
+    }
+  }
+
+  bool get hasCustomEyes => eyes != eyesForColor(color);
 
   /// 1 спокойный · 2 радость · 3 счастье(закрытые, редко) · 4 замешательство · 5 грусть
   static PetFaceEmotion faceEmotion({required int hunger, required int mood}) {
@@ -600,17 +706,6 @@ class PetAppearance {
       return 'assets/images/pets/$id.svg';
     }
     return 'assets/images/pets/${id}_${emotion.name}.svg';
-  }
-
-  /// PNG-рендер того же облика (надёжнее на Web, чем тяжёлый SVG).
-  String rasterPathFor({
-    required int hunger,
-    required int mood,
-    int stage = 1,
-  }) {
-    final svg = assetPathFor(hunger: hunger, mood: mood, stage: stage);
-    final name = svg.split('/').last.replaceAll('.svg', '.png');
-    return 'assets/images/pets/renders/$name';
   }
 
   /// Стадия роста питомца (не возраст ребёнка):

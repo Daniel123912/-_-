@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -34,6 +36,35 @@ class _JuniorPlayShellState extends ConsumerState<JuniorPlayShell> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _tryLoginBonus());
+    ref.listenManual(gameControllerProvider, _onProfileForPetSpeech);
+  }
+
+  void _onProfileForPetSpeech(
+    AsyncValue<PlayerProfile?>? prev,
+    AsyncValue<PlayerProfile?> next,
+  ) {
+    final before = prev?.value;
+    final after = next.value;
+    if (before == null || after == null || !mounted || _tab != 0) return;
+
+    final afterGoal = ref.read(contentProvider).maybeWhen(
+          data: (data) {
+            for (final g in GameEconomy.goalsForProfile(after, data.goals)) {
+              if (g.id == after.selectedGoalId) return g;
+            }
+            return null;
+          },
+          orElse: () => null,
+        );
+    final afterNext = GameEconomy.nextAction(after, goal: afterGoal);
+    final reaction = Engagement.petStateChangeSpeech(
+      before: before,
+      after: after,
+      next: afterNext,
+      goalName: afterGoal?.name,
+    );
+    if (reaction == null) return;
+    setState(() => _overrideSpeech = reaction);
   }
 
   void _pinSpeech(String text) {
@@ -134,32 +165,6 @@ class _JuniorPlayShellState extends ConsumerState<JuniorPlayShell> {
     );
     final bubbleText = _overrideSpeech ?? contextSpeech;
 
-    // После покупки / задания / копилки — питомец объясняет «что изменилось».
-    ref.listen(gameControllerProvider, (prev, nextAsync) {
-      final before = prev?.value;
-      final after = nextAsync.value;
-      if (before == null || after == null || !mounted) return;
-      if (_tab != 0) return;
-      final afterGoal = content.maybeWhen(
-        data: (data) {
-          for (final g in GameEconomy.goalsForProfile(after, data.goals)) {
-            if (g.id == after.selectedGoalId) return g;
-          }
-          return null;
-        },
-        orElse: () => null,
-      );
-      final afterNext = GameEconomy.nextAction(after, goal: afterGoal);
-      final reaction = Engagement.petStateChangeSpeech(
-        before: before,
-        after: after,
-        next: afterNext,
-        goalName: afterGoal?.name,
-      );
-      if (reaction == null) return;
-      setState(() => _overrideSpeech = reaction);
-    });
-
     // Ленивые вкладки: IndexedStack держал все экраны (и ~30MB PNG магазина) сразу.
     final Widget body = switch (_tab) {
       1 => const QuestsScreen(),
@@ -174,6 +179,9 @@ class _JuniorPlayShellState extends ConsumerState<JuniorPlayShell> {
           canSecret: canSecret,
           onSpeak: _onSpeak,
           onSecret: _claimSecret,
+          onToggleSound: () => ref
+              .read(gameControllerProvider.notifier)
+              .setSoundEnabled(!profile.soundEnabled),
           onNext: () => _runNext(next),
           onLearn: () => Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const LearnScreen()),
@@ -214,6 +222,7 @@ class _JuniorPetRoom extends StatelessWidget {
     required this.canSecret,
     required this.onSpeak,
     required this.onSecret,
+    required this.onToggleSound,
     required this.onNext,
     required this.onLearn,
     required this.onAdult,
@@ -227,6 +236,7 @@ class _JuniorPetRoom extends StatelessWidget {
   final bool canSecret;
   final ValueChanged<String> onSpeak;
   final VoidCallback onSecret;
+  final VoidCallback onToggleSound;
   final VoidCallback onNext;
   final VoidCallback onLearn;
   final VoidCallback onAdult;
@@ -240,8 +250,7 @@ class _JuniorPetRoom extends StatelessWidget {
     final h = MediaQuery.sizeOf(context).height;
     final compact = h < 720;
 
-    return PlayBackground(
-      roomAsset: FinnyRooms.home,
+    return _DayNightHomeBackground(
       scrimTop: 0.22,
       scrimBottom: 0.12,
       child: SafeArea(
@@ -264,8 +273,10 @@ class _JuniorPetRoom extends StatelessWidget {
                       balance: profile.balance,
                       savings: profile.savingsBalance,
                       stars: profile.stars,
+                      soundEnabled: profile.soundEnabled,
                       canSecret: canSecret,
                       onSecret: onSecret,
+                      onToggleSound: onToggleSound,
                       onLearn: onLearn,
                       onAdult: onAdult,
                     ),
@@ -432,6 +443,62 @@ class _JuniorPetRoom extends StatelessWidget {
           },
         ),
       ),
+    );
+  }
+}
+
+/// Фон комнаты питомца: днём [FinnyRooms.homeDay], вечером [FinnyRooms.homeEvening].
+class _DayNightHomeBackground extends StatefulWidget {
+  const _DayNightHomeBackground({
+    required this.child,
+    this.scrimTop = 0.28,
+    this.scrimBottom = 0.22,
+  });
+
+  final Widget child;
+  final double scrimTop;
+  final double scrimBottom;
+
+  @override
+  State<_DayNightHomeBackground> createState() =>
+      _DayNightHomeBackgroundState();
+}
+
+class _DayNightHomeBackgroundState extends State<_DayNightHomeBackground> {
+  Timer? _timer;
+  late String _roomAsset;
+
+  @override
+  void initState() {
+    super.initState();
+    _roomAsset = FinnyRooms.homeForNow();
+    _armSwitchTimer();
+  }
+
+  void _armSwitchTimer() {
+    _timer?.cancel();
+    final delay = FinnyRooms.nextHomeSwitchAt().difference(DateTime.now()) +
+        const Duration(seconds: 1);
+    _timer = Timer(delay.isNegative ? const Duration(minutes: 1) : delay, () {
+      if (!mounted) return;
+      setState(() => _roomAsset = FinnyRooms.homeForNow());
+      _armSwitchTimer();
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return PlayBackground(
+      roomAsset: _roomAsset,
+      scrimTop: widget.scrimTop,
+      scrimBottom: widget.scrimBottom,
+      child: widget.child,
     );
   }
 }
@@ -660,8 +727,10 @@ class _TopHud extends StatelessWidget {
     required this.balance,
     required this.savings,
     required this.stars,
+    required this.soundEnabled,
     required this.canSecret,
     required this.onSecret,
+    required this.onToggleSound,
     required this.onLearn,
     required this.onAdult,
   });
@@ -669,8 +738,10 @@ class _TopHud extends StatelessWidget {
   final int balance;
   final int savings;
   final int stars;
+  final bool soundEnabled;
   final bool canSecret;
   final VoidCallback onSecret;
+  final VoidCallback onToggleSound;
   final VoidCallback onLearn;
   final VoidCallback onAdult;
 
@@ -711,6 +782,17 @@ class _TopHud extends StatelessWidget {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            _RoundIconButton(
+              icon: soundEnabled
+                  ? Icons.volume_up_rounded
+                  : Icons.volume_off_rounded,
+              color: soundEnabled
+                  ? const Color(0xFF38BDF8).withValues(alpha: 0.72)
+                  : Colors.white.withValues(alpha: 0.18),
+              onTap: onToggleSound,
+              tooltip: soundEnabled ? 'Выключить звук' : 'Включить звук',
+            ),
+            const SizedBox(width: 6),
             if (canSecret) ...[
               _RoundIconButton(
                 icon: Icons.auto_awesome_rounded,
@@ -786,15 +868,17 @@ class _RoundIconButton extends StatelessWidget {
     required this.icon,
     required this.color,
     required this.onTap,
+    this.tooltip,
   });
 
   final IconData icon;
   final Color color;
   final VoidCallback onTap;
+  final String? tooltip;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
+    final button = Material(
       color: color,
       shape: const CircleBorder(),
       clipBehavior: Clip.antiAlias,
@@ -808,6 +892,8 @@ class _RoundIconButton extends StatelessWidget {
         ),
       ),
     );
+    if (tooltip == null) return button;
+    return Tooltip(message: tooltip!, child: button);
   }
 }
 

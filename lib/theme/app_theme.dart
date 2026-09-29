@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 import 'dart:ui';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 /// Локальные OFL-шрифты (без сети при старте).
@@ -291,11 +290,34 @@ class AppTheme {
 
 /// Пути к комнатам вкладок нижнего дока.
 abstract final class FinnyRooms {
-  static const home = 'assets/images/room_home_bg.png';
+  static const homeDay = 'assets/images/room_home_day.jpg';
+  static const homeEvening = 'assets/images/room_home_evening.jpg';
+  static const home = homeDay;
   static const quests = 'assets/images/room_quests_bg.png';
   static const shop = 'assets/images/room_shop_bg.png';
   static const savings = 'assets/images/room_savings_bg.png';
   static const budget = 'assets/images/room_budget_bg.png';
+
+  /// Вечер с 18:00 до 5:59, днём — светлый фон.
+  static bool isEveningNow([DateTime? now]) {
+    final h = (now ?? DateTime.now()).hour;
+    return h >= 18 || h < 6;
+  }
+
+  static String homeForNow([DateTime? now]) =>
+      isEveningNow(now) ? homeEvening : homeDay;
+
+  /// Следующая смена день↔вечер (для таймера в UI).
+  static DateTime nextHomeSwitchAt([DateTime? now]) {
+    final n = now ?? DateTime.now();
+    if (isEveningNow(n)) {
+      // до 6:00 сегодня или завтра
+      final today6 = DateTime(n.year, n.month, n.day, 6);
+      if (n.isBefore(today6)) return today6;
+      return DateTime(n.year, n.month, n.day + 1, 6);
+    }
+    return DateTime(n.year, n.month, n.day, 18);
+  }
 }
 
 /// Яркий градиент 7–8 лет + опциональная комната (картинка) под вкладку.
@@ -453,7 +475,7 @@ class _MeshBlob extends StatelessWidget {
   }
 }
 
-/// Glass-карточка из Figma (`card-glass`).
+/// Матовая карточка (единый вид на web и native, без «скачущего» blur).
 class SoftCard extends StatelessWidget {
   const SoftCard({
     super.key,
@@ -473,8 +495,10 @@ class SoftCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final borderRadius = BorderRadius.circular(radius);
-    // Тёмное стекло — читается на ярком градиенте 7–8.
-    final fill = color ?? Colors.black.withValues(alpha: 0.28);
+    // База всегда матовая; цветной tint поверх неё, а не вместо (иначе
+    // карточки с alpha 0.12 выглядят «прозрачными», а без color — матовыми).
+    const base = Color(0xE61A1030); // ~90% тёмный
+    final fill = color == null ? base : Color.alphaBlend(color!, base);
     final content = Material(
       color: fill,
       child: onTap == null
@@ -498,13 +522,7 @@ class SoftCard extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: borderRadius,
-        // BackdropFilter на web + много карточек → тяжёлый CanvasKit и сбои.
-        child: kIsWeb
-            ? content
-            : BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: content,
-              ),
+        child: content,
       ),
     );
   }

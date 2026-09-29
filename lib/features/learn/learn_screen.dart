@@ -747,49 +747,55 @@ class _QuizPage extends StatelessWidget {
                 ),
           ),
           const SizedBox(height: 16),
-          ...lesson.quiz.options.map(
-            (opt) => Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: SoftCard(
-                onTap: () => onAnswer(opt),
-                color: FinnyColors.sheet,
-                radius: 18,
-                padding: EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: isJunior ? 16 : 14,
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: isJunior ? 40 : 34,
-                      height: isJunior ? 40 : 34,
-                      decoration: BoxDecoration(
-                        color: accent.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(11),
+          ...(() {
+            final options = List<QuestOption>.of(lesson.quiz.options)
+              ..shuffle(math.Random(lesson.id.hashCode));
+            return options
+                .map(
+                  (opt) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: SoftCard(
+                      onTap: () => onAnswer(opt),
+                      color: FinnyColors.sheet,
+                      radius: 18,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: isJunior ? 16 : 14,
                       ),
-                      child: Icon(
-                        isJunior
-                            ? Icons.pets_rounded
-                            : Icons.touch_app_rounded,
-                        color: accent,
-                        size: isJunior ? 20 : 18,
+                      child: Row(
+                        children: [
+                          Container(
+                            width: isJunior ? 40 : 34,
+                            height: isJunior ? 40 : 34,
+                            decoration: BoxDecoration(
+                              color: accent.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(11),
+                            ),
+                            child: Icon(
+                              isJunior
+                                  ? Icons.pets_rounded
+                                  : Icons.touch_app_rounded,
+                              color: accent,
+                              size: isJunior ? 20 : 18,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              opt.label,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: isJunior ? 16 : 15,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        opt.label,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: isJunior ? 16 : 15,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+                  ),
+                )
+                .toList();
+          })(),
           if (learned)
             Text(
               isJunior

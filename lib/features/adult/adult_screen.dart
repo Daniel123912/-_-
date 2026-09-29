@@ -172,13 +172,14 @@ class AdultPanelScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            'Возраст и сложность заданий',
+                            'Уровень заданий',
                             style: TextStyle(fontWeight: FontWeight.w800),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Уровень ${profile.ageTrack.label}: только подходящие '
-                            'задания и уроки. Для 7–8 лет — «Попроще».',
+                            'Сейчас: ${profile.ageTrack.shortLabel}. '
+                            'От уровня зависят задания и уроки. '
+                            'Для старта — «ПРОСТОЙ».',
                             style: TextStyle(
                               color: FinnyColors.mist,
                               fontSize: 13,
@@ -190,9 +191,7 @@ class AdultPanelScreen extends ConsumerWidget {
                               contentPadding: EdgeInsets.zero,
                               value: track,
                               groupValue: profile.ageTrack,
-                              title: Text(
-                                '${track.label} · ${track.difficultyLabel}',
-                              ),
+                              title: Text(track.shortLabel),
                               subtitle: Text(track.description),
                               onChanged: (v) {
                                 if (v != null) {
@@ -304,7 +303,7 @@ class AdultPanelScreen extends ConsumerWidget {
                       contentPadding: EdgeInsets.zero,
                       title: const Text('Звук'),
                       subtitle: const Text(
-                        'Короткие звуки при покупках, копилке и заданиях. Вибрация не отключается.',
+                        'Музыка и короткие звуки. Громкость — кнопками телефона. Вибрация не отключается.',
                       ),
                       value: profile.soundEnabled,
                       onChanged: (v) => ref

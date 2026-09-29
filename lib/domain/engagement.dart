@@ -13,7 +13,7 @@ class PeriodStory {
   final String mission;
 }
 
-enum CosmeticSlot { head, held, room }
+enum CosmeticSlot { head, held, backpack, feet, room }
 
 class CosmeticVisual {
   const CosmeticVisual({
@@ -157,17 +157,17 @@ class Engagement {
     ),
     'keychain_67': CosmeticVisual(
       emoji: '🔑',
-      slot: CosmeticSlot.room,
+      slot: CosmeticSlot.backpack,
       image: 'assets/images/shop/keychain_67.png',
     ),
     'keychain_67_neon': CosmeticVisual(
       emoji: '💚',
-      slot: CosmeticSlot.room,
+      slot: CosmeticSlot.backpack,
       image: 'assets/images/shop/keychain_67_neon.png',
     ),
     'keychain_67_gold': CosmeticVisual(
       emoji: '✨',
-      slot: CosmeticSlot.room,
+      slot: CosmeticSlot.backpack,
       image: 'assets/images/shop/keychain_67_gold.png',
     ),
     'microphone': CosmeticVisual(
@@ -182,7 +182,7 @@ class Engagement {
     ),
     'sneakers': CosmeticVisual(
       emoji: '👟',
-      slot: CosmeticSlot.room,
+      slot: CosmeticSlot.feet,
       image: 'assets/images/shop/sneakers.png',
     ),
     'gaming_mouse': CosmeticVisual(
@@ -240,7 +240,11 @@ class Engagement {
       slot: CosmeticSlot.room,
       image: 'assets/images/shop/trophy.png',
     ),
-    'grooming': CosmeticVisual(emoji: '🪥', slot: CosmeticSlot.held),
+    'grooming': CosmeticVisual(
+      emoji: '🪥',
+      slot: CosmeticSlot.held,
+      image: 'assets/images/shop/grooming.png',
+    ),
     'bath_soap': CosmeticVisual(emoji: '🫧', slot: CosmeticSlot.held),
     'vitamins': CosmeticVisual(emoji: '💊', slot: CosmeticSlot.held),
     'soft_bed': CosmeticVisual(emoji: '🛏️', slot: CosmeticSlot.room),
@@ -248,10 +252,31 @@ class Engagement {
     'first_aid': CosmeticVisual(emoji: '🩹', slot: CosmeticSlot.room),
     'nail_care': CosmeticVisual(emoji: '💅', slot: CosmeticSlot.held),
     'towel': CosmeticVisual(emoji: '🧺', slot: CosmeticSlot.room),
-    'food_bowl': CosmeticVisual(emoji: '🍽️', slot: CosmeticSlot.room),
-    'water': CosmeticVisual(emoji: '💧', slot: CosmeticSlot.room),
-    'vet_check': CosmeticVisual(emoji: '🩺', slot: CosmeticSlot.room),
-    'gift_friend': CosmeticVisual(emoji: '🎀', slot: CosmeticSlot.room),
+    'food_bowl': CosmeticVisual(
+      emoji: '🍽️',
+      slot: CosmeticSlot.room,
+      image: 'assets/images/shop/food_bowl.png',
+    ),
+    'water': CosmeticVisual(
+      emoji: '💧',
+      slot: CosmeticSlot.room,
+      image: 'assets/images/shop/water.png',
+    ),
+    'vet_check': CosmeticVisual(
+      emoji: '🩺',
+      slot: CosmeticSlot.room,
+      image: 'assets/images/shop/vet_check.png',
+    ),
+    'gift_friend': CosmeticVisual(
+      emoji: '🎀',
+      slot: CosmeticSlot.room,
+      image: 'assets/images/shop/gift_friend.png',
+    ),
+    'gift_charity': CosmeticVisual(
+      emoji: '💝',
+      slot: CosmeticSlot.room,
+      image: 'assets/images/shop/gift_charity.png',
+    ),
   };
 
   static PeriodStory storyForPeriod(int index) {
@@ -292,14 +317,14 @@ class Engagement {
       return lines[DateTime.now().second % lines.length];
     }
     if (mood >= 80) {
-      const lines = [
-        'Ура! Ты супер!',
+      final who = petName.trim().isEmpty ? 'Ты' : 'Эй,';
+      final lines = [
+        'Ура! $who супер!',
         'Мне так весело с тобой!',
-        'Ты мой чемпион!',
+        '$who мой чемпион!',
         'Давай ещё чуть-чуть в копилку!',
       ];
-      return lines[DateTime.now().second % lines.length]
-          .replaceFirst('Ты', petName.isEmpty ? 'Ты' : 'Эй');
+      return lines[DateTime.now().second % lines.length];
     }
     const lines = [
       'Привет! Давай играть!',

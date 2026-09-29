@@ -12,9 +12,9 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter_riverpod: ^3.4.3
   shared_preferences: ^2.5.5
-  path_provider: ^2.1.6
   flutter_svg: ^2.2.0
   audioplayers: ^6.8.1
+  image: ^4.10.1
 
 dev_dependencies:
   flutter_test:
@@ -29,8 +29,8 @@ flutter:
     - assets/images/shop/
     - assets/images/pets/
     - assets/images/pets/thumbs/
-    - assets/images/pets/renders/
     - assets/sounds/
+    - assets/4.mp3
   fonts:
     - family: Fredoka
       fonts:
